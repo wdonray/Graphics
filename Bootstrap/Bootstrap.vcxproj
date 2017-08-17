@@ -71,7 +71,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)inc;$(SolutionDir)dep;$(SolutionDir)dep\GLFW\include</IncludePath>
     <SourcePath>$(VC_SourcePath);$(ProjectDir)src</SourcePath>
-    <LibraryPath>C:\Users\s178060\Documents\GitHub\Graphics\dep\GLFW\lib-vc2015;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)dep\GLFW\lib-vc2015;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -122,8 +122,8 @@
     <ClCompile Include="..\dep\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\dep\imgui\imgui_draw.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
-    <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\imgui_impl_glfw_gl3.cpp" />
+    <ClCompile Include="src\Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dep\imgui\imconfig.h" />
