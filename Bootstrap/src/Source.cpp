@@ -17,8 +17,9 @@ int main()
 	{
 		glfwDestroyWindow(window);
 		glfwTerminate();
-		ImGui::Shutdown();
-		exit(EXIT_SUCCESS);
+		//ImGui::Shutdown();
+		//exit(EXIT_SUCCESS);
+		return false;
 	}
 	assert(window != nullptr);
 
@@ -30,50 +31,50 @@ int main()
 	auto clearColor = glm::vec4(0.1f, 0.1f, 0.5f, 0.5f);
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 
-	static auto f = 0.0f;
-	auto show_first_window = true;
-	auto show_second_window = false;
-	auto show_third_window = true;
-	ImGui_ImplGlfwGL3_Init(window, true);
-	auto view = lookAt(glm::vec3(10, 10, 10), glm::vec3(0), glm::vec3(0, 1, 0));
-	auto projection = glm::perspective(glm::pi<float>() * 0.25f, 16.0f / 9.0f, 0.1f, 1000.f);
-	Gizmos::create();
+	//static auto f = 0.0f;
+	//auto show_first_window = true;
+	//auto show_second_window = false;
+	//auto show_third_window = true;
+	//ImGui_ImplGlfwGL3_Init(window, true);
+	//auto view = lookAt(glm::vec3(10, 10, 10), glm::vec3(0), glm::vec3(0, 1, 0));
+	//auto projection = glm::perspective(glm::pi<float>() * 0.25f, 16.0f / 9.0f, 0.1f, 1000.f);
+	//Gizmos::create();
 	glEnable(GL_DEPTH_TEST);
 	while (true)
 	{
 		glfwPollEvents();
-		ImGui_ImplGlfwGL3_NewFrame();
-		if (show_first_window)
-		{
-			ImGui::Begin("Window One", &show_first_window);
-			auto Show = "Show Second Window";
-			auto Hide = "Hide Second Window";
-			if (show_second_window == false)
-			{
-				if (ImGui::Button(Show)) show_second_window ^= 1;
-			}
-			else if (show_second_window == true)
-			{
-				if (ImGui::Button(Hide)) show_second_window ^= 1;
-			}
-			ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
-			ImGui::End();
-		}
-		if (show_second_window)
-		{
-			ImGui::Begin("Window Two", &show_second_window);
-			ImGui::Text("Hello, world!");
-			ImGui::SliderFloat("float test slider", &f, 0.0f, 1.0f);
-			ImGui::Text("%f", &f);
-			ImGui::End();
-		}
-		if (show_third_window)
-		{
-			ImGui::Begin("Window Three", &show_third_window);
-			ImGui::SetNextWindowSize(ImVec2(200, 100));
-			//ImGui::SetWindowPos(ImVec2(450, 20));
-			ImGui::End();
-		}
+		//ImGui_ImplGlfwGL3_NewFrame();
+		//if (show_first_window)
+		//{
+		//	ImGui::Begin("Window One", &show_first_window);
+		//	auto Show = "Show Second Window";
+		//	auto Hide = "Hide Second Window";
+		//	if (show_second_window == false)
+		//	{
+		//		if (ImGui::Button(Show)) show_second_window ^= 1;
+		//	}
+		//	else if (show_second_window == true)
+		//	{
+		//		if (ImGui::Button(Hide)) show_second_window ^= 1;
+		//	}
+		//	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
+		//	ImGui::End();
+		//}
+		//if (show_second_window)
+		//{
+		//	ImGui::Begin("Window Two", &show_second_window);
+		//	ImGui::Text("Hello, world!");
+		//	ImGui::SliderFloat("float test slider", &f, 0.0f, 1.0f);
+		//	ImGui::Text("%f", &f);
+		//	ImGui::End();
+		//}
+		//if (show_third_window)
+		//{
+		//	ImGui::Begin("Window Three", &show_third_window);
+		//	ImGui::SetNextWindowSize(ImVec2(200, 100));
+		//	//ImGui::SetWindowPos(ImVec2(450, 20));
+		//	ImGui::End();
+		//}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		if (glfwWindowShouldClose(window))
 			break;
@@ -87,7 +88,7 @@ int main()
 			printf("Color Vec4 => %f\n", clearColor.r);
 			glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		}*/
-		Gizmos::clear();
+		/*Gizmos::clear();
 		Gizmos::addTransform(glm::mat4(1));
 		glm::vec4 white(1);
 		glm::vec4 black(0, 0, 0, 1);
@@ -105,9 +106,8 @@ int main()
 		}
 		Gizmos::addSphere(glm::vec3(0, 0, 0), 5.f, 25, 25, black);
 		Gizmos::draw(projection * view);
-		ImGui::Render();
+		ImGui::Render();*/
 		glfwSwapBuffers(window);
 	}
-
 	return 0;
 }
