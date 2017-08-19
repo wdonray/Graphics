@@ -1,25 +1,37 @@
 #pragma once
 #include <glm/glm.hpp>
-
+using namespace glm;
 class Camera
 {
 public:
 	Camera();
 	virtual ~Camera();
+
+	mat4 m_position;
+	mat4 m_view;
+
 	virtual void update(float deltaTime);
 	void setPerspective(float FOV, float aspectRatio, float near, float far);
-	void setLookAt(glm::vec3 from, glm::vec3 to, glm::vec3 up);
-	void setPosition(glm::vec3 position);
-	glm::mat4 getWorldTransform();
-	glm::mat4 getView();
-	glm::mat4 getProjection();
-	glm::mat4 getProjectionView();
-	void updateProjectionViewTransfrom();
+	void setLookAt(vec3 from, vec3 to, vec3 up);
+	void setPosition(vec3 position);
+	mat4 getWorldTransform();
+	mat4 getView();
+	mat4 getProjection();
+	mat4 getProjectionView();
+
 
 private:
-	glm::mat4 worldTransform;
-	glm::mat4 viewTransform;
-	glm::mat4 projectionTransform;
-	glm::mat4 projectionViewTransform;
+	float m_fov;
+	float m_aspectRatio;
+	float m_near;
+	float m_far;
+
+	mat4 worldTransform;
+	mat4 m_projection;
+	mat4 viewTransform;
+	mat4 projectionTransform;
+	mat4 projectionViewTransform;
+
+	void updateProjectionViewTransfrom();
 };
 
