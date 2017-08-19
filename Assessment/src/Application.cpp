@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <gl_core_4_4.h>
 #include <GLFW/glfw3.h>
+#include <glm/ext.hpp>
 
 
 Application::Application() : m_window(nullptr), m_GameOver(false)
@@ -14,7 +15,7 @@ Application::~Application()
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
 // ReSharper disable once CppMemberFunctionMayBeConst
-void Application::setBackgroundColor(float r, float g, float b, float a) 
+void Application::setBackgroundColor(float r, float g, float b, float a)
 {
 	glClearColor(r, g, b, a);
 }
