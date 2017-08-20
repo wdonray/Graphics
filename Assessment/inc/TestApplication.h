@@ -1,6 +1,6 @@
 #pragma once
 #include "Application.h"
-//#include "gl_core_4_4.h"
+#include "gl_core_4_4.h"
 
 //Derives from application
 class TestApplication : public Application
@@ -21,7 +21,7 @@ public:
 	  @parm fullscreen is it fullscreen or not
 	 */
 	bool run(const char* title, unsigned int width, unsigned int height, bool fullscreen);
-	//GLuint vao = 0;
-	//GLuint shader_programme;
+	GLuint vao = 0;
+	GLuint shader_programme;
 };
 

@@ -24,8 +24,23 @@ float Application::getTime() const
 {
 	return float(glfwGetTime());
 }
-bool Application::createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen)
+// ReSharper disable once CppMemberFunctionMayBeStatic
+// ReSharper disable once CppMemberFunctionMayBeConst
+void Application::SwapBuffers(struct GLFWwindow* window)
 {
+	glfwSwapBuffers(window);
+}
+// ReSharper disable once CppMemberFunctionMayBeStatic
+// ReSharper disable once CppMemberFunctionMayBeConst
+void Application::destroyWindow(struct GLFWwindow * window)
+{
+	glfwDestroyWindow(window);
+	glfwTerminate();
+}
+
+bool Application::createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen)
+{	 
+	//Function to create window
 	if (!glfwInit())
 		return false;
 	auto monitor = (fullscreen) ? glfwGetPrimaryMonitor() : nullptr;
@@ -33,8 +48,7 @@ bool Application::createWindow(const char* title, unsigned int width, unsigned i
 	glfwMakeContextCurrent(m_window);
 	if (ogl_LoadFunctions() == ogl_LOAD_FAILED)
 	{
-		glfwDestroyWindow(m_window);
-		glfwTerminate();
+		destroyWindow(m_window);
 		return false;
 	}
 	assert(m_window != nullptr);
@@ -60,7 +74,7 @@ bool Application::run(const char* title, unsigned int width, unsigned int height
 		update(deltaTime);
 		draw();
 		shutdown();
-		glfwSwapBuffers(m_window);
+		SwapBuffers(m_window);
 		m_GameOver = m_GameOver || glfwWindowShouldClose(m_window) == true;
 	}
 	return false;
