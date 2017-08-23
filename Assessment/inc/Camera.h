@@ -12,7 +12,7 @@ public:
 
 	virtual void update(float deltaTime);
 	void setPerspective(float FOV, float aspectRatio, float near, float far);
-	void setLookAt(vec3 from, vec3 to, vec3 up);
+	void setLookAt(vec3 eye, vec3 center, vec3 up);
 	void setPosition(vec3 position);
 	mat4 getWorldTransform();
 	mat4 getView();

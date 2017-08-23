@@ -21,7 +21,8 @@ public:
 	  @parm fullscreen is it fullscreen or not
 	 */
 	bool run(const char* title, unsigned int width, unsigned int height, bool fullscreen);
-	GLuint vao = 0;
-	GLuint shader_programme;
+	Camera * m_camera;
+	//GLuint vao = 0;
+	//GLuint shader_programme;
 };
 
