@@ -41,7 +41,7 @@ bool CameraApp::update(float deltaTime)
 		cos(rt), 0, -sin(rt), 0,
 		0, 1, 0, 0,
 		sin(rt), 0, cos(rt), 0,
-		10, 0, 0, 1
+		2, 0, 0, 1
 	);
 	sun_transform->rotate(rt, YAXIS);
 	if (glfwGetKey(m_window, 'A') == GLFW_PRESS)
@@ -86,10 +86,10 @@ bool CameraApp::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	Gizmos::clear();
 	earth_wrt_sun = sun_wrt_world * earth_wrt_sun * 2.f;
-	Gizmos::addSphere(earth_wrt_sun[3], 1, 20, 20, color, &earth_wrt_sun);
+	Gizmos::addSphere(earth_wrt_sun[2], .3, 20, 20, color, &earth_wrt_sun);
 	mat4 sun4x4 = sun_transform->m_world;
 	Gizmos::addSphere(sun_transform->m_world[3], 1, 20, 20, color, &sun4x4);
-	Gizmos::addTransform(earth_wrt_sun, 4);
+	//Gizmos::addTransform(earth_wrt_sun, 4);
 	//Gizmos::addSphere(s1[3], 1, 20, 20, color);
 	Gizmos::addTransform(s1, 4);
 
