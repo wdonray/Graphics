@@ -14,10 +14,10 @@ public:
 	void setPerspective(float FOV, float aspectRatio, float near, float far);
 	void setLookAt(vec3 eye, vec3 center, vec3 up);
 	void setPosition(vec3 position);
-	mat4 getWorldTransform();
-	mat4 getView();
-	mat4 getProjection();
-	mat4 getProjectionView();
+	mat4 getWorldTransform() const;
+	mat4 getView() const;
+	mat4 getProjection() const;
+	mat4 getProjectionView() const;
 
 
 private:
@@ -26,11 +26,11 @@ private:
 	float m_near;
 	float m_far;
 
-	mat4 worldTransform;
+	mat4 m_worldTransform;
 	mat4 m_projection;
-	mat4 viewTransform;
-	mat4 projectionTransform;
-	mat4 projectionViewTransform;
+	mat4 m_viewTransform;
+	mat4 m_projectionTransform;
+	mat4 m_projectionViewTransform;
 
 	void updateProjectionViewTransfrom();
 };

@@ -2,7 +2,7 @@
 #include <glm/gtc/matrix_transform.inl>
 #include <glm/gtc/constants.inl>
 
-Camera::Camera() : m_fov(0), m_aspectRatio(0), m_near(0), m_far(0), worldTransform(1), m_projection(1), viewTransform(1), projectionTransform(1), projectionViewTransform(1)
+Camera::Camera() : m_fov(0), m_aspectRatio(0), m_near(0), m_far(0), m_worldTransform(1), m_projection(1), m_viewTransform(1), m_projectionTransform(1), m_projectionViewTransform(1)
 {
 	setPerspective(pi<float>()/ 4.f, 16 / 9.f, 0.1f, 1000.f);
 }
@@ -62,34 +62,36 @@ void Camera::setLookAt(vec3 eye, vec3 center, vec3 up)
 	m_view = view;
 	mat4 expected = lookAt(eye, center, up);
 	assert(view == expected);
-	worldTransform = inverse(view);
-	projectionViewTransform = m_projection * view;
+	m_worldTransform = inverse(view);
+	m_projectionViewTransform = m_projection * view;
 }
 
 void Camera::setPosition(vec3 position)
 {
+	m_viewTransform = translate(m_worldTransform, position);
 }
 
-mat4 Camera::getWorldTransform()
+mat4 Camera::getWorldTransform() const
 {
-	return{};
+	return m_worldTransform;
 }
 
-mat4 Camera::getView()
+mat4 Camera::getView() const
 {
-	return{};
+	return m_viewTransform;
 }
 
-mat4 Camera::getProjection()
+mat4 Camera::getProjection() const
 {
-	return{};
+	return m_projectionTransform;
 }
 
-mat4 Camera::getProjectionView()
+mat4 Camera::getProjectionView() const
 {
 	return m_projection * m_view;
 }
 
 void Camera::updateProjectionViewTransfrom()
 {
+	m_projectionViewTransform = m_projectionTransform * m_viewTransform;
 }

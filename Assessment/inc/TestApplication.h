@@ -10,7 +10,7 @@ public:
 	virtual ~TestApplication();
 	bool startup()override;
 	bool shutdown()override;
-	bool createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen);
+	//bool createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen);
 	bool update(float deltaTime)override;
 	bool draw()override;
 	/**

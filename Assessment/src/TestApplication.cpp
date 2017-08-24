@@ -4,8 +4,7 @@
 #include "Camera.h"
 #include <Gizmos.h>
 
-TestApplication::TestApplication() /*: shader_programme(0)*/
-	: m_camera(nullptr)
+TestApplication::TestApplication() /*: shader_programme(0)*/ : m_camera(nullptr)
 {
 }
 
