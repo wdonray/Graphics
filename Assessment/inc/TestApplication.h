@@ -10,7 +10,6 @@ public:
 	virtual ~TestApplication();
 	bool startup()override;
 	bool shutdown()override;
-	//bool createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen);
 	bool update(float deltaTime)override;
 	bool draw()override;
 	/**
@@ -20,8 +19,8 @@ public:
 	  @parm height the height of the window
 	  @parm fullscreen is it fullscreen or not
 	 */
-	bool run(const char* title, unsigned int width, unsigned int height, bool fullscreen);
-	Camera * m_camera;
+	//bool run(const char* title, unsigned int width, unsigned int height, bool fullscreen);
+	//bool createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen);
 	//GLuint vao = 0;
 	//GLuint shader_programme;
 };

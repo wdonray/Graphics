@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include <Gizmos.h>
 
-TestApplication::TestApplication() /*: shader_programme(0)*/ : m_camera(nullptr)
+TestApplication::TestApplication() /*: shader_programme(0)*/
 {
 }
 
@@ -18,9 +18,7 @@ bool TestApplication::startup()
 	glEnable(GL_DEPTH_TEST);
 	//Sets color on startup
 	setBackgroundColor(0.2f, 0.3f, 0.3f, 1.0f);
-	Gizmos::create();
-	m_camera = new Camera();
-	m_camera->setLookAt(vec3(10, 10, 10), vec3(0, 0, 0), vec3(0, 1, 0));
+
 	//test
 	//From Hello World
 	//float points[] = {
@@ -72,32 +70,12 @@ bool TestApplication::update(float deltaTime)
 		setBackgroundColor(r, r2, 0.3f, 1.0f);
 	return false;
 }
-mat4 s1 = mat4(1);
-vec4 center = vec4(0, 0, 0, 1);
-vec4 color = vec4(0, 0, 0, 0);
+
 bool TestApplication::draw()
 {
 	//Clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	Gizmos::clear();
-	Gizmos::addSphere(s1[3], 1, 20, 20, color);
-	Gizmos::addTransform(s1, 4);
-	vec4 white(1);
-	vec4 black(0, 0, 0, 1);
-	for (auto i = 0; i < 21; ++i)
-	{
-		Gizmos::addLine(
-			glm::vec3(-10 + i, 0, 10),
-			glm::vec3(-10 + i, 0, -10),
-			i == 10 ? white : black);
-		Gizmos::addLine(
-			glm::vec3(10, 0, -10 + i),
-			glm::vec3(-10, 0, -10 + i),
-			i == 10 ? white : black);
-
-	}
-	auto projview = m_camera->getProjectionView();
-	Gizmos::draw(projview);
+	
 	//glUseProgram(shader_programme);
 	//glBindVertexArray(vao);
 	//glDrawArrays(GL_TRIANGLES, 0, 3);

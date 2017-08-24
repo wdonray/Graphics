@@ -123,14 +123,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\CameraApp.h" />
     <ClInclude Include="inc\FlyCamera.h" />
     <ClInclude Include="inc\Camera.h" />
     <ClInclude Include="inc\Application.h" />
     <ClInclude Include="inc\Gizmos.h" />
     <ClInclude Include="inc\gl_core_4_4.h" />
     <ClInclude Include="inc\TestApplication.h" />
+    <ClInclude Include="inc\Transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CameraApp.cpp" />
     <ClCompile Include="src\FlyCamera.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Application.cpp" />
@@ -138,6 +141,7 @@
     <ClCompile Include="src\Source.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
     <ClCompile Include="src\TestApplication.cpp" />
+    <ClCompile Include="src\Transform.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
