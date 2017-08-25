@@ -40,7 +40,7 @@ void Transform::rotate(float radians, Axis rotationAxis)
 	}
 	m_rotation = mat4(vec4(xaxis, 1), vec4(yaxis, 1), vec4(zaxis, 1), vec4(0, 0, 0, 1));
 	m_world = mat4(1) * m_rotation *m_scale;
-	mat4 expexted = glm::rotate(radians, rotaxis);
+	//mat4 expexted = glm::rotate(radians, rotaxis);
 	//assert(m_rotation == expexted);
 }
 

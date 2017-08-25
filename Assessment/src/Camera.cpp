@@ -3,8 +3,7 @@
 #include <glm/gtc/constants.inl>
 
 Camera::Camera() : m_fov(0), m_aspectRatio(0), m_near(0), m_far(0),
-                   m_worldTransform(1), m_projection(1), m_viewTransform(1), m_projectionTransform(1),
-                   m_projectionViewTransform(1)
+                   m_worldTransform(1), m_projection(1), m_projectionViewTransform(1)
 {
 	setPerspective(pi<float>() / 4.f, 16 / 9.f, 0.1f, 1000.f);
 	//setOrthographicView(-15, 15, -15, 20, -10, 50);
@@ -46,22 +45,22 @@ void Camera::setPerspective(float FOV, float aspectRatio, float near, float far)
 void Camera::setOrthographicView(float left, float right, float bot, float top, float near, float far)
 {
 	mat4 expected = ortho(left, right, bot, top, near, far);
-	float x = 2.f / (right - left);	
+	float x = 2.f / (right - left);
 	float y = 2.f / (top - bot);
 	float z = -2.f / (far - near);
 
 	float xt = -1 * ((right + left) / (right - left));
 	float yt = -1 * ((top + bot) / (top - bot));
 	float zt = -1 * ((far + near) / (far - near));
-	
+
 	// ReSharper disable once CppUseAuto
 	mat4 orthoView = mat4(
-		vec4(x, 0, 0, 0),            
+		vec4(x, 0, 0, 0),
 		vec4(0, y, 0, 0),
 		vec4(0, 0, z, 0),
 		vec4(xt, yt, zt, 1)
 	);
-	
+
 	assert(orthoView == expected);
 	m_projection = orthoView;
 }
@@ -103,7 +102,6 @@ void Camera::setPosition(vec3 position)
 	m_transform->rotate(pi<float>() * 0.25f, ZAXIS);
 	m_transform->translate(position);
 	m_view = inverse(m_worldTransform);
-	//m_viewTransform = translate(m_worldTransform, position);
 }
 
 void Camera::setSpeed(float speed)
@@ -118,20 +116,15 @@ mat4 Camera::getWorldTransform() const
 
 mat4 Camera::getView() const
 {
-	return m_viewTransform;
+	return m_view;
 }
 
 mat4 Camera::getProjection() const
 {
-	return m_projectionTransform;
+	return m_projection;
 }
 
 mat4 Camera::getProjectionView() const
 {
 	return m_projection * m_view;
-}
-
-void Camera::updateProjectionViewTransfrom()
-{
-	m_projectionViewTransform = m_projectionTransform * m_viewTransform;
 }

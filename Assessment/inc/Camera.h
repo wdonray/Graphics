@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Transform.h"
 using namespace glm;
+
 class Camera
 {
 public:
@@ -20,7 +21,7 @@ public:
 	mat4 getView() const;
 	mat4 getProjection() const;
 	mat4 getProjectionView() const;
-	Transform * m_transform;
+	Transform* m_transform;
 
 private:
 	float m_fov;
@@ -31,11 +32,5 @@ private:
 
 	mat4 m_worldTransform;
 	mat4 m_projection;
-	mat4 m_viewTransform;
-	mat4 m_projectionTransform;
 	mat4 m_projectionViewTransform;
-
-
-	void updateProjectionViewTransfrom();
 };
-
