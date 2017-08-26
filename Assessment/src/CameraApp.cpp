@@ -18,18 +18,10 @@ CameraApp::~CameraApp()
 }
 
 Transform* sun_transform;
-Transform* earth_transform;
-Transform* mercury_transform;
-Transform* venus_transform;
-Transform* mars_transform;
 
 bool CameraApp::startup()
 {
 	sun_transform = new Transform();
-	earth_transform = new Transform();
-	mercury_transform = new Transform();
-	venus_transform = new Transform();
-	mars_transform = new Transform();
 	glEnable(GL_DEPTH_TEST);
 	//Sets color on startup
 	setBackgroundColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -67,9 +59,11 @@ bool CameraApp::update(float deltaTime)
 	Keyboard_Movement();
 	//ImGui Text
 	ImGuiWindows();
+	//Planets orbating
+	Planet_Orbat();
 
 	m_camera->update(deltaTime);
-	
+
 	return false;
 }
 
@@ -82,15 +76,30 @@ bool CameraApp::draw()
 	vec4 gray(0.5f, .5f, .5f, 1);
 	vec4 peru(0.8f, 0.5f, 0.2f, 1);
 	vec4 blue(0, 191, 255, 1);
+	vec4 red(1, 0, 0, 1);
+	vec4 silver(0.75f, 0.75f, 0.75f, 1);
+	vec4 pale_golden_rod(0.9f, 0.9f, 0.6f, 1);
+	vec4 aqua(0, 1, 1, 1);
+	vec4 navy(0, 0, .5f, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	Gizmos::clear();
 	mercury = sun * mercury * .2f;
 	venus = sun * venus * .2f;
 	earth = sun * earth * .2f;
+	mars = sun * mars * .2f;
+	jupiter = sun * jupiter * .2f;
+	saturn = sun * saturn * .2f;
+	uranus = sun * uranus * .2f;
+	neptune = sun * neptune * .2f;
 	Gizmos::addSphere(mercury[3], 1, 20, 20, gray, &mercury);
 	Gizmos::addSphere(venus[3], 2, 20, 20, peru, &venus);
 	Gizmos::addSphere(earth[3], 2, 20, 20, blue, &earth);
-	Gizmos::addSphere(sun_transform->m_world[3], 1, 20, 20, yellow, &sun_transform->m_world);
+	Gizmos::addSphere(mars[3], 1, 20, 20, red, &mars);
+	Gizmos::addSphere(jupiter[3], 3, 20, 20, silver, &jupiter);
+	Gizmos::addSphere(saturn[3], 2.5f, 20, 20, pale_golden_rod, &saturn);
+	Gizmos::addSphere(uranus[3], 2, 20, 20, aqua, &uranus);
+	Gizmos::addSphere(neptune[3], 2, 20, 20, navy, &neptune);
+	Gizmos::addSphere(sun_transform->m_world[3], 1.5, 20, 20, yellow, &sun_transform->m_world);
 	Gizmos::addTransform(mercury, 3);
 	Gizmos::addTransform(venus, 5);
 	Gizmos::addTransform(earth, 5);
@@ -149,7 +158,7 @@ void CameraApp::Keyboard_Movement() const
 	}
 }
 
-void CameraApp::Mouse_Movement()
+void CameraApp::Mouse_Movement() const
 {
 	static auto MouseButtonDown = false;
 	if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
@@ -178,15 +187,6 @@ void CameraApp::Mouse_Movement()
 
 		std::cout << "Delta Mouse:: " << to_string(vec2(DeltaX, DeltaY)) << std::endl;
 	}
-	if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_3))
-	{
-		printf("worked");
-	}
-	mercury = sun_transform->m_world * translate(vec3(0, 0, 10)) * rotate(runTime, vec3(0, 1, 0));
-	venus = sun_transform->m_world * translate(vec3(0, 0, 20)) * rotate(runTime * .5f, vec3(0, 1, 0));
-	earth = sun_transform->m_world * translate(vec3(0, 0, 30)) * rotate(runTime * .25f, vec3(0, 1, 0));
-	sun_transform->rotate(runTime, YAXIS);
-	//earth_transform->rotate(runTime, XAXIS);
 }
 
 void CameraApp::Planets_Respect()
@@ -215,6 +215,44 @@ void CameraApp::Planets_Respect()
 		-sin(runTime), 0, cos(runTime), 0,
 		10, 0, 0, 1
 	);
+	jupiter = mat4(
+		cos(runTime), 0, sin(runTime), 0,
+		0, 1, 0, 0,
+		-sin(runTime), 0, cos(runTime), 0,
+		10, 0, 0, 1
+	);
+	venus = mat4(
+		cos(runTime), 0, sin(runTime), 0,
+		0, 1, 0, 0,
+		-sin(runTime), 0, cos(runTime), 0,
+		10, 0, 0, 1
+	);
+	uranus = mat4(
+		cos(runTime), 0, sin(runTime), 0,
+		0, 1, 0, 0,
+		-sin(runTime), 0, cos(runTime), 0,
+		10, 0, 0, 1
+	);
+	neptune = mat4(
+		cos(runTime), 0, sin(runTime), 0,
+		0, 1, 0, 0,
+		-sin(runTime), 0, cos(runTime), 0,
+		10, 0, 0, 1
+	);
+}
+
+void CameraApp::Planet_Orbat()
+{
+	mercury = rotate(runTime, vec3(0, 1, 0)) * sun_transform->m_world * translate(vec3(0, 0, 10));
+	venus = rotate(runTime * .2f, vec3(0, 1, 0)) * sun_transform->m_world * translate(vec3(0, 0, 20));
+	earth = rotate(runTime * .3f, vec3(0, 1, 0)) *sun_transform->m_world * translate(vec3(0, 0, 30));
+	mars = rotate(runTime * .4f, vec3(0, 1, 0)) * sun_transform->m_world * translate(vec3(0, 0, 40));
+	jupiter = rotate(runTime * .5f, vec3(0, 1, 0)) *sun_transform->m_world * translate(vec3(0, 0, 50));
+	saturn = rotate(runTime * .6f, vec3(0, 1, 0)) *sun_transform->m_world * translate(vec3(0, 0, 60));
+	uranus = rotate(runTime * .7f, vec3(0, 1, 0)) *sun_transform->m_world * translate(vec3(0, 0, 70));
+	neptune = sun_transform->m_world * translate(vec3(0, 0, 80)) * rotate(runTime * .95f, vec3(0, 1, 0));
+
+	sun_transform->rotate(runTime, YAXIS);
 }
 
 void CameraApp::ImGuiWindows()
@@ -260,9 +298,4 @@ void CameraApp::ImGuiWindows()
 	ImGui::TextColored(red, " Set Eye to vec3(10, 0, 0)");
 
 	ImGui::End();
-}
-
-void CameraApp::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-
 }
