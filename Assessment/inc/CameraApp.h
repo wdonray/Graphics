@@ -1,5 +1,10 @@
 #pragma once
 #include "Application.h"
+#include <glm/glm.hpp>
+
+class Camera;
+
+using namespace glm;
 class CameraApp :
 	public Application
 {

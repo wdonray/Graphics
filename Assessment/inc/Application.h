@@ -1,7 +1,5 @@
 #pragma once
-#include <glm/fwd.hpp>
-#include <glm/detail/type_mat4x4.hpp>
-#include "Camera.h"
+
 struct GLFWwindow;
 //Pure virtual base class
 class Application

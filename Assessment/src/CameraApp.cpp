@@ -8,6 +8,8 @@
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 
+#include "Camera.h"
+
 
 CameraApp::CameraApp() : m_camera(nullptr), runTime(0)
 {

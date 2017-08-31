@@ -10,12 +10,12 @@ int main()
 	//Application* app = new TestApplication();
 	//app->run("Part One", 1600, 900, false);
 
-	LoadFile * fr = new LoadFile();
-	const char * data = fr->ReadFile("test.txt");
+	auto fr = new LoadFile();
+	auto data = fr->ReadFile("test.txt");
 	cout << data << endl;
 
 	Application* app = new CameraApp();
-	app->run("Part One", 1600, 900, false);
+	app->run("Solar System", 1600, 900, false);
 	delete app;
 
 	return  0;
