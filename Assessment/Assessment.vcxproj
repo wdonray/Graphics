@@ -135,11 +135,13 @@
     <ClInclude Include="inc\imgui_impl_glfw_gl3.h" />
     <ClInclude Include="inc\TestApplication.h" />
     <ClInclude Include="inc\Transform.h" />
+    <ClInclude Include="LoadFile.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dep\imgui\imgui.cpp" />
     <ClCompile Include="..\dep\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\dep\imgui\imgui_draw.cpp" />
+    <ClCompile Include="LoadFile.cpp" />
     <ClCompile Include="src\CameraApp.cpp" />
     <ClCompile Include="src\FlyCamera.cpp" />
     <ClCompile Include="src\Camera.cpp" />

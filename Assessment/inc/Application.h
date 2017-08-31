@@ -22,7 +22,6 @@ protected:
 	void destroyWindow(GLFWwindow * window);
 	// ReSharper disable once CppHiddenFunction
 	bool createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen);
-
 	GLFWwindow * m_window;
 	bool m_GameOver;
 

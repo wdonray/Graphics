@@ -39,7 +39,7 @@ void Application::destroyWindow(struct GLFWwindow * window)
 }
 
 bool Application::createWindow(const char* title, unsigned int width, unsigned int height, bool fullscreen)
-{	 
+{
 	//Function to create window
 	if (!glfwInit())
 		return false;
@@ -79,3 +79,4 @@ bool Application::run(const char* title, unsigned int width, unsigned int height
 	}
 	return false;
 }
+

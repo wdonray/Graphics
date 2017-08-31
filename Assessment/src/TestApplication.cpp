@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "Camera.h"
 #include <Gizmos.h>
+#include <stdio.h>
 
 TestApplication::TestApplication() /*: shader_programme(0)*/
 {

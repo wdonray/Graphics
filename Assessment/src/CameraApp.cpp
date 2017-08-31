@@ -62,7 +62,7 @@ bool CameraApp::update(float deltaTime)
 	//ImGui Text
 	ImGuiWindows();
 	//Planets orbating
-	Planet_Orbat();
+	Planet_Orbit();
 
 	m_camera->update(deltaTime);
 
@@ -246,7 +246,7 @@ void CameraApp::Planets_Respect()
 	);
 }
 
-void CameraApp::Planet_Orbat()
+void CameraApp::Planet_Orbit()
 {
 	mercury = rotate(runTime, vec3(0, 1, 0)) * sun_transform->m_world * translate(vec3(0, 0, 10));
 	venus = rotate(runTime * .7f, vec3(0, 1, 0)) * sun_transform->m_world * translate(vec3(0, 0, 20));
