@@ -2,9 +2,10 @@
 #include <gl_core_4_4.h>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
+#include <gl_core_4_4.h>
 
 
-RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0), cam(nullptr), fl(nullptr), vsSource(nullptr), fsSource(nullptr)
+RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0), cam(nullptr), fl(nullptr), vsSource(nullptr), fsSource(nullptr), m_rows(0), m_cols(0)
 {
 	cam = new Camera();
 	fl = new Shader();
@@ -124,7 +125,8 @@ bool RenderingApp::draw()
 	glUseProgram(m_programID);
 	unsigned int projectionViewUniform = glGetUniformLocation(m_programID, "projectionViewWorldMatrix");
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
-
+	unsigned int time = glGetUniformLocation(m_programID, "time");
+	glUniform1f(time, glfwGetTime());
 	glBindVertexArray(m_VAO);
 	unsigned int indexCount = (m_rows - 1) * (m_cols - 1) * 6;
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
