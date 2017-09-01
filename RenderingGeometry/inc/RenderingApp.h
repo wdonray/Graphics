@@ -4,16 +4,15 @@
 #include <Camera.h>
 #include <Shader.h>
 #include <CameraApp.h>
+#include "Mesh.h"
+
 class RenderingApp :
 	public Application
 {
 public:
 	RenderingApp();
 	~RenderingApp();
-	struct Vertex
-	{
-		vec4 position, color;
-	};
+
 	void generateGrid(unsigned int rows, unsigned int cols);
 	// our vertex and index buffers
 	unsigned int m_VAO;
@@ -23,6 +22,7 @@ public:
 	Camera * cam;
 	Shader * fl;
 	CameraApp * camapp;
+	Mesh * mesh;
 	const char * vsSource;
 	const char * fsSource;
 	unsigned int m_rows;
