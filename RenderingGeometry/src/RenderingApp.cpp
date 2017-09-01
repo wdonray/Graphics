@@ -120,6 +120,7 @@ bool RenderingApp::update(float deltaTime)
 {
 	runTime += deltaTime;
 	camapp->Keyboard_Movement(cam, m_window);
+	camapp->Mouse_Movement(cam, m_window);
 	return false;
 }
 
@@ -131,7 +132,7 @@ bool RenderingApp::draw()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glUseProgram(m_programID);
-
+	//
 	glBindVertexArray(m_VAO);
 
 			glUniform1f(time, glfwGetTime());
@@ -139,7 +140,7 @@ bool RenderingApp::draw()
 			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 
 	glBindVertexArray(0);
-
+	//
 	glBindVertexArray(m_VAO);
 
 			mat4 newModel = translate(vec3(5, 0, 0));
@@ -147,7 +148,7 @@ bool RenderingApp::draw()
 			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 
 	glBindVertexArray(0);
-
+	//
 	glBindVertexArray(m_VAO);
 
 			mat4 newModel2 = translate(vec3(5, 0, 5));
@@ -155,7 +156,7 @@ bool RenderingApp::draw()
 			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 
 	glBindVertexArray(0);
-
+	//
 	glBindVertexArray(m_VAO);
 
 			mat4 newModel3 = translate(vec3(0, 0, 5));
@@ -163,7 +164,7 @@ bool RenderingApp::draw()
 			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 
 	glBindVertexArray(0);
-
+	//
 	glUseProgram(0);
 	return false;
 }

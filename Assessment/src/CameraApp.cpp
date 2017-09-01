@@ -58,7 +58,7 @@ bool CameraApp::update(float deltaTime)
 	//Setting the planets matrix
 	Planets_Respect();
 	//GetMousePos
-	Mouse_Movement();
+	Mouse_Movement(m_camera, m_window);
 	//Move Camera with Keys
 	Keyboard_Movement(m_camera, m_window);
 	//ImGui Text
@@ -165,10 +165,10 @@ void CameraApp::Keyboard_Movement(Camera* camera, GLFWwindow* window) const
 	}
 }
 
-void CameraApp::Mouse_Movement() const
+void CameraApp::Mouse_Movement(Camera* camera, GLFWwindow* window) const
 {
 	static auto MouseButtonDown = false;
-	if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
 	{
 		//If we pressed then set the starting points to zero
 		static double PrevMouseX = 0, PrevMouseY = 0;
@@ -177,11 +177,11 @@ void CameraApp::Mouse_Movement() const
 		{
 			//Set the mouse down to true and save the starting mouse pos
 			MouseButtonDown = true;
-			glfwGetCursorPos(m_window, &PrevMouseX, &PrevMouseY);
+			glfwGetCursorPos(window, &PrevMouseX, &PrevMouseY);
 		}
 		//Always calculate the current mouse pos
 		double currmouseX = 0, currmouseY = 0;
-		glfwGetCursorPos(m_window, &currmouseX, &currmouseY);
+		glfwGetCursorPos(window, &currmouseX, &currmouseY);
 		//Calculate the delta pos if we did not press the mouse this will be 0 - 0 = 0 
 		auto DeltaX = currmouseX - PrevMouseX;
 		auto DeltaY = currmouseY - PrevMouseY;
@@ -190,7 +190,7 @@ void CameraApp::Mouse_Movement() const
 		PrevMouseY = currmouseY;
 		auto rEle = rotate(static_cast<float>(DeltaX) * 1 / 800, vec3(0, 1, 0));
 		auto rAzi = rotate(static_cast<float>(DeltaY) * 1 / 800, vec3(1, 0, 0));
-		m_camera->m_view = rEle * rAzi * m_camera->m_view;
+		camera->m_view = rEle * rAzi * camera->m_view;
 
 		std::cout << "Delta Mouse:: " << to_string(vec2(DeltaX, DeltaY)) << std::endl;
 	}

@@ -23,7 +23,7 @@ public:
 	/**
 	 * Mouse movement using the mouse 
 	 */
-	void Mouse_Movement() const;
+	void Mouse_Movement(Camera*, GLFWwindow*) const;
 	/**
 	 * Planets with respect to the sun
 	 */
