@@ -102,7 +102,7 @@ bool RenderingApp::startup()
 	glDeleteShader(fragmentShader);
 	glDeleteShader(vertexShader);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 
 	Vertex a0 = { vec4(0, 0, 0, 1), vec4(1, 1, 1, 1) };
 	Vertex b1 = { vec4(3, 0, 0, 1), vec4(1, 1, 1, 1) };
@@ -164,6 +164,7 @@ bool RenderingApp::draw()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glUseProgram(m_programID);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	mesh->bind();
 		rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
@@ -191,6 +192,14 @@ bool RenderingApp::draw()
 		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
 
+	//How to Scale
+	//mesh->bind();
+	//	mat4 newModel4 = glm::scale(glm::mat4(1), glm::vec3(2, 2, 2));
+	//	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel4));
+	//	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	//mesh->unbind();
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glUseProgram(0);
 	return false;
 }
