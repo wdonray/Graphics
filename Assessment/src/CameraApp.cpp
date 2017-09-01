@@ -60,7 +60,7 @@ bool CameraApp::update(float deltaTime)
 	//GetMousePos
 	Mouse_Movement();
 	//Move Camera with Keys
-	Keyboard_Movement();
+	Keyboard_Movement(m_camera, m_window);
 	//ImGui Text
 	ImGuiWindows();
 	//Planets orbating
@@ -129,39 +129,39 @@ bool CameraApp::draw()
 	return false;
 }
 
-void CameraApp::Keyboard_Movement() const
+void CameraApp::Keyboard_Movement(Camera* camera, GLFWwindow* window) const
 {
-	if (glfwGetKey(m_window, 'A') == GLFW_PRESS)
+	if (glfwGetKey(window, 'A') == GLFW_PRESS)
 	{
-		m_camera->setPosition(m_camera->getWorldTransform()[3] -= m_camera->getWorldTransform()[0]);
+		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[0]);
 	}
-	if (glfwGetKey(m_window, 'W') == GLFW_PRESS)
+	if (glfwGetKey(window, 'W') == GLFW_PRESS)
 	{
-		m_camera->setPosition(m_camera->getWorldTransform()[3] -= m_camera->getWorldTransform()[2]);
+		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[2]);
 	}
-	if (glfwGetKey(m_window, 'S') == GLFW_PRESS)
+	if (glfwGetKey(window, 'S') == GLFW_PRESS)
 	{
-		m_camera->setPosition(m_camera->getWorldTransform()[3] += m_camera->getWorldTransform()[2]);
+		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[2]);
 	}
-	if (glfwGetKey(m_window, 'D') == GLFW_PRESS)
+	if (glfwGetKey(window, 'D') == GLFW_PRESS)
 	{
-		m_camera->setPosition(m_camera->getWorldTransform()[3] += m_camera->getWorldTransform()[0]);
+		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[0]);
 	}
-	if (glfwGetKey(m_window, 'Q') == GLFW_PRESS)
+	if (glfwGetKey(window, 'Q') == GLFW_PRESS)
 	{
-		m_camera->setPosition(m_camera->getWorldTransform()[3] += m_camera->getWorldTransform()[1]);
+		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[1]);
 	}
-	if (glfwGetKey(m_window, 'E') == GLFW_PRESS)
+	if (glfwGetKey(window, 'E') == GLFW_PRESS)
 	{
-		m_camera->setPosition(m_camera->getWorldTransform()[3] -= m_camera->getWorldTransform()[1]);
+		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[1]);
 	}
-	if (glfwGetKey(m_window, 'R') == GLFW_PRESS)
+	if (glfwGetKey(window, 'R') == GLFW_PRESS)
 	{
-		m_camera->setLookAt(vec3(10, 10, 10), vec3(0, 0, 0), vec3(0, 1, 0));
+		camera->setLookAt(vec3(10, 10, 10), vec3(0, 0, 0), vec3(0, 1, 0));
 	}
-	if (glfwGetKey(m_window, 'T') == GLFW_PRESS)
+	if (glfwGetKey(window, 'T') == GLFW_PRESS)
 	{
-		m_camera->setLookAt(vec3(10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));
+		camera->setLookAt(vec3(10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));
 	}
 }
 

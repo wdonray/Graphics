@@ -2,13 +2,13 @@
 #include <gl_core_4_4.h>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
-#include <gl_core_4_4.h>
 
 
-RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0), cam(nullptr), fl(nullptr), vsSource(nullptr), fsSource(nullptr), m_rows(0), m_cols(0)
+RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0), cam(nullptr), fl(nullptr), vsSource(nullptr), fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
 {
 	cam = new Camera();
 	fl = new Shader();
+	camapp = new CameraApp();
 	vsSource = fl->load("vsSource.vert");
 	fsSource = fl->load("fsSource.vert");
 }
@@ -77,7 +77,8 @@ void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
 
 bool RenderingApp::startup()
 {
-	cam->setLookAt(vec3(12, 12, 12), vec3(5, 0, 5), vec3(0, 1, 0));
+	setBackgroundColor(0.4f, 0.0f, 0.8f, 1.0f);
+	cam->setLookAt(vec3(20, 20, 20), vec3(5, 0, 5), vec3(0, 1, 0));
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -104,7 +105,7 @@ bool RenderingApp::startup()
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	generateGrid(10, 10);
+	generateGrid(5, 5);
 	return false;
 }
 
@@ -117,19 +118,52 @@ bool RenderingApp::shutdown()
 
 bool RenderingApp::update(float deltaTime)
 {
+	runTime += deltaTime;
+	camapp->Keyboard_Movement(cam, m_window);
 	return false;
 }
 
 bool RenderingApp::draw()
 {
-	glUseProgram(m_programID);
-	unsigned int projectionViewUniform = glGetUniformLocation(m_programID, "projectionViewWorldMatrix");
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
-	unsigned int time = glGetUniformLocation(m_programID, "time");
-	glUniform1f(time, glfwGetTime());
-	glBindVertexArray(m_VAO);
 	unsigned int indexCount = (m_rows - 1) * (m_cols - 1) * 6;
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	unsigned int projectionViewUniform = glGetUniformLocation(m_programID, "projectionViewWorldMatrix");
+	unsigned int time = glGetUniformLocation(m_programID, "time");
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glUseProgram(m_programID);
+
+	glBindVertexArray(m_VAO);
+
+			glUniform1f(time, glfwGetTime());
+			glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
+			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+
+	glBindVertexArray(0);
+
+	glBindVertexArray(m_VAO);
+
+			mat4 newModel = translate(vec3(5, 0, 0));
+			glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel));
+			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+
+	glBindVertexArray(0);
+
+	glBindVertexArray(m_VAO);
+
+			mat4 newModel2 = translate(vec3(5, 0, 5));
+			glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel2));
+			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+
+	glBindVertexArray(0);
+
+	glBindVertexArray(m_VAO);
+
+			mat4 newModel3 = translate(vec3(0, 0, 5));
+			glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel3));
+			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+
+	glBindVertexArray(0);
+
 	glUseProgram(0);
 	return false;
 }

@@ -19,7 +19,7 @@ public:
 	/**
 	 * Keyboard movement using the keyboard
 	 */
-	void Keyboard_Movement() const;
+	void Keyboard_Movement(Camera*, GLFWwindow*) const;
 	/**
 	 * Mouse movement using the mouse 
 	 */
