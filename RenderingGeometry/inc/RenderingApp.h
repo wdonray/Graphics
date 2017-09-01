@@ -1,10 +1,10 @@
 #pragma once
 #include "Application.h"
-#include <glm/detail/type_vec4.hpp>
-#include <Camera.h>
-#include <Shader.h>
-#include <CameraApp.h>
-#include "Mesh.h"
+#include <glm/glm.hpp>
+struct Camera;
+struct Shader;
+struct CameraApp;
+struct Mesh;
 
 class RenderingApp :
 	public Application
@@ -28,6 +28,7 @@ public:
 	unsigned int m_rows;
 	unsigned int m_cols;
 	float runTime;
+	glm::mat4 rotationView;
 protected:
 	bool startup() override;
 	bool shutdown() override;

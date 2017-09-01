@@ -2,6 +2,10 @@
 #include <gl_core_4_4.h>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
+#include <Camera.h>
+#include <Shader.h>
+#include <CameraApp.h>
+#include "Mesh.h"
 
 
 RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0),
@@ -14,6 +18,12 @@ fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
 	mesh = new Mesh();
 	vsSource = fl->load("vsSource.vert");
 	fsSource = fl->load("fsSource.vert");
+	rotationView = mat4
+	(1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		-5, 0, -5, 1
+	);
 }
 
 RenderingApp::~RenderingApp()
@@ -65,8 +75,8 @@ RenderingApp::~RenderingApp()
 
 bool RenderingApp::startup()
 {
-	setBackgroundColor(0.4f, 0.0f, 0.8f, 1.0f);
-	cam->setLookAt(vec3(20, 20, 20), vec3(5, 0, 5), vec3(0, 1, 0));
+	setBackgroundColor(1, 1, 1, 1.0f);
+	cam->setLookAt(vec3(10, 10, 10), vec3(1, 3, 1), vec3(0, 1, 0));
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -94,20 +104,35 @@ bool RenderingApp::startup()
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	Vertex a = { vec4(-5, 0, 0, 1), vec4(1, 1, 1, 1) };//bl	
-	Vertex b = { vec4(5, 0, 0, 1), vec4(1, 1, 1, 1) };//br
-	Vertex c = { vec4(5, -5, 0, 1), vec4(1, 1, 1, 1) };//tl
-	Vertex d = { vec4(-5, -5, 0, 1), vec4(1, 1, 1, 1) };//tr
-	Vertex e = { vec4(-5, 5, 0, 1), vec4(1, 1, 1, 1) };//tr	
-	Vertex f = { vec4(5, 5, 0, 1) , vec4(1, 1, 1, 1) };
+	Vertex a0 = { vec4(0, 0, 0, 1), vec4(1, 1, 1, 1) };
+	Vertex b1 = { vec4(3, 0, 0, 1), vec4(1, 1, 1, 1) };
+	Vertex c2 = { vec4(0, 0, -3, 1), vec4(1, 1, 1, 1) };
+	Vertex d3 = { vec4(3, 0, -3, 1), vec4(1, 1, 1, 1) };
+	Vertex e4 = { vec4(0, 3, 0, 1), vec4(1, 1, 1, 1) };
+	Vertex f5 = { vec4(3, 3, 0, 1), vec4(1, 1, 1, 1) };
+	Vertex g6 = { vec4(0, 3, -3, 1), vec4(1, 1, 1, 1) };
+	Vertex h7 = { vec4(3, 3, -3, 1), vec4(1, 1, 1, 1) };
 
-	vector<Vertex> vertices{ a,b,c,d,e,f };
+	vector<Vertex> vertices{ a0, b1, c2, d3, e4, f5, g6, h7 };
 	vector<unsigned int> indices{
-		0, 1, 2,
-		0, 2, 3,
-		0, 4, 1,
-		0, 4 ,5,
-		1, 0 ,4 };
+		0,1,2,//bottom
+		2,3,1,
+
+		4,5,6,//top
+		6,7,5,
+
+		1,3,5,//right
+		5,7,3,
+
+		0,2,4,//left
+		4,6,2,
+
+		0,1,4,//front
+		4,5,1,
+
+		2,3,6,//back
+		6,7,3
+	};
 
 	mesh->initialize(vertices, indices);
 	mesh->Create_Buffers();
@@ -139,15 +164,33 @@ bool RenderingApp::draw()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glUseProgram(m_programID);
-	//
+
 	mesh->bind();
-
-	glUniform1f(time, glfwGetTime());
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
-	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
-
+		rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
+		glUniform1f(time, glfwGetTime());
+		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * rotationView));
+		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
-	//
+
+	mesh->bind();
+		mat4 newModel1 = translate(vec3(5, 0, 0));
+		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel1 * rotationView));
+		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mesh->unbind();
+
+	mesh->bind();
+		mat4 newModel2 = translate(vec3(5, 0, 5));
+		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel2 * rotationView));
+		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mesh->unbind();
+
+
+	mesh->bind();
+		mat4 newModel3 = translate(vec3(0, 0, 5));
+		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel3 * rotationView));
+		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mesh->unbind();
+
 	glUseProgram(0);
 	return false;
 }
