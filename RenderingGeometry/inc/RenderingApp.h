@@ -2,7 +2,7 @@
 #include "Application.h"
 #include <glm/glm.hpp>
 struct Camera;
-struct Shader;
+struct LoadFile;
 struct CameraApp;
 struct Mesh;
 
@@ -20,7 +20,7 @@ public:
 	unsigned int m_IBO;
 	unsigned int m_programID;
 	Camera * cam;
-	Shader * fl;
+	LoadFile * fl;
 	CameraApp * camapp;
 	Mesh * mesh;
 	const char * vsSource;

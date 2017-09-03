@@ -1,13 +1,13 @@
-#include "Shader.h"
+#include "LoadFile.h"
 #include "stdio.h"
-Shader::Shader()
+LoadFile::LoadFile()
 {}
 
-Shader::~Shader()
+LoadFile::~LoadFile()
 {
 }
  
-const char* Shader::load(const char* FileName)
+const char* LoadFile::load(const char* FileName)
 {
 	fopen_s(&m_file, FileName, "r");
 	if (m_file == nullptr)

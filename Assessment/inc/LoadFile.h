@@ -1,10 +1,10 @@
 #pragma once
 #include <cstdio>
-class Shader
+class LoadFile
 {
 public:
-	Shader();
-	~Shader();
+	LoadFile();
+	~LoadFile();
 
 	const char * load(const char *);
 private:

@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 #include <Camera.h>
-#include <Shader.h>
+#include <LoadFile.h>
 #include <CameraApp.h>
 #include "Mesh.h"
 
@@ -13,7 +13,7 @@ cam(nullptr), fl(nullptr), vsSource(nullptr),
 fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
 {
 	cam = new Camera();
-	fl = new Shader();
+	fl = new LoadFile();
 	camapp = new CameraApp();
 	mesh = new Mesh();
 	vsSource = fl->load("vsSource.vert");
