@@ -119,7 +119,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\RenderingApp.cpp" />
     <ClCompile Include="src\Source.cpp" />
@@ -127,7 +127,7 @@
   <ItemGroup>
     <ClInclude Include="inc\RenderingApp.h" />
     <ClInclude Include="inc\Mesh.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="inc\Shader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,6 +5,7 @@ struct Camera;
 struct LoadFile;
 struct CameraApp;
 struct Mesh;
+struct Shader;
 
 class RenderingApp :
 	public Application
@@ -23,6 +24,7 @@ public:
 	LoadFile * fl;
 	CameraApp * camapp;
 	Mesh * mesh;
+	Shader * shader;
 	const char * vsSource;
 	const char * fsSource;
 	unsigned int m_rows;

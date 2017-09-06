@@ -2,32 +2,38 @@
 #include <gl_core_4_4.h>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
-#include <Camera.h>
-#include <LoadFile.h>
-#include <CameraApp.h>
+#include "Camera.h"
+#include "LoadFile.h"
+#include "CameraApp.h"
 #include "Mesh.h"
+#include "Shader.h"
+
 
 
 RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0),
-cam(nullptr), fl(nullptr), vsSource(nullptr),
-fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
+                               cam(nullptr), fl(nullptr), shader(nullptr), vsSource(nullptr),
+                               fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
 {
 	cam = new Camera();
 	fl = new LoadFile();
 	camapp = new CameraApp();
 	mesh = new Mesh();
-	vsSource = fl->load("vsSource.vert");
-	fsSource = fl->load("fsSource.vert");
+	shader = new Shader();
 	rotationView = mat4
 	(1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		-5, 0, -5, 1
+	 0, 1, 0, 0,
+	 0, 0, 1, 0,
+	 -5, 0, -5, 1
 	);
 }
 
 RenderingApp::~RenderingApp()
 {
+	delete cam;
+	delete fl;
+	delete camapp;
+	delete mesh; 
+	delete shader;
 }
 
 //void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
@@ -77,32 +83,10 @@ bool RenderingApp::startup()
 {
 	setBackgroundColor(1, 1, 1, 1.0f);
 	cam->setLookAt(vec3(10, 10, 10), vec3(1, 3, 1), vec3(0, 1, 0));
-	int success = GL_FALSE;
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(vertexShader, 1, (const char**)&vsSource, nullptr);
-	glCompileShader(vertexShader);
-	glShaderSource(fragmentShader, 1, (const char**)&fsSource, nullptr);
-	glCompileShader(fragmentShader);
-	m_programID = glCreateProgram();
-	glAttachShader(m_programID, vertexShader);
-	glAttachShader(m_programID, fragmentShader);
-	glLinkProgram(m_programID);
-	glGetProgramiv(m_programID, GL_LINK_STATUS, &success);
-	if (success == GL_FALSE)
-	{
-		int infoLogLength = 0;
-		glGetProgramiv(m_programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-		char* infoLog = new char[infoLogLength];
-		glGetProgramInfoLog(m_programID, infoLogLength, nullptr, infoLog);
-		printf("Error: Failed to link shader program!\n");
-		printf("%s\n", infoLog);
-		delete[] infoLog;
-	}
-	glDeleteShader(fragmentShader);
-	glDeleteShader(vertexShader);
 
-	
+	shader->load("vsSource.vert", GL_VERTEX_SHADER);
+	shader->load("fsSource.vert", GL_FRAGMENT_SHADER);
+	shader->attach();
 
 	Vertex a0 = { vec4(0, 0, 0, 1), vec4(1, 1, 1, 1) };
 	Vertex b1 = { vec4(3, 0, 0, 1), vec4(1, 1, 1, 1) };
@@ -159,37 +143,38 @@ bool RenderingApp::update(float deltaTime)
 
 bool RenderingApp::draw()
 {
-	unsigned int projectionViewUniform = glGetUniformLocation(m_programID, "projectionViewWorldMatrix");
-	unsigned int time = glGetUniformLocation(m_programID, "time");
+	//unsigned int projectionViewUniform = glGetUniformLocation(m_programID, "projectionViewWorldMatrix");
+	//unsigned int time = glGetUniformLocation(m_programID, "time");
+	unsigned int projectionViewUniform = shader->getUniform("projectionViewWorldMatrix");
+	unsigned int time = shader->getUniform("time");
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glUseProgram(m_programID);
+	shader->bind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	mesh->bind();
-		rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
-		glUniform1f(time, glfwGetTime());
-		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * rotationView));
-		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
+	glUniform1f(time, glfwGetTime());
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * rotationView));
+	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
 
 	mesh->bind();
-		mat4 newModel1 = translate(vec3(5, 0, 0));
-		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel1 * rotationView));
-		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mat4 newModel1 = translate(vec3(5, 0, 0));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel1 * rotationView));
+	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
 
 	mesh->bind();
-		mat4 newModel2 = translate(vec3(5, 0, 5));
-		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel2 * rotationView));
-		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mat4 newModel2 = translate(vec3(5, 0, 5));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel2 * rotationView));
+	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
 
-
 	mesh->bind();
-		mat4 newModel3 = translate(vec3(0, 0, 5));
-		glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel3 * rotationView));
-		glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mat4 newModel3 = translate(vec3(0, 0, 5));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel3 * rotationView));
+	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
 
 	//How to Scale
@@ -200,6 +185,6 @@ bool RenderingApp::draw()
 	//mesh->unbind();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glUseProgram(0);
+	shader->unbind();
 	return false;
 }
