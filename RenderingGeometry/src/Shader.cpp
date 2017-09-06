@@ -23,6 +23,7 @@ void Shader::unbind()
 	glUseProgram(0);
 }
 
+
 void Shader::attach()
 {
 	int success = GL_FALSE;
@@ -54,9 +55,9 @@ unsigned Shader::getUniform(const char* name)
 	return glGetUniformLocation(m_program, name);
 }
 
-void Shader::load(const char* filename, unsigned type)
+void Shader::load(const char * filename, unsigned int type)
 {
-	switch(type)
+	switch (type)
 	{
 	case GL_VERTEX_SHADER:
 		vsSource = fl->load(filename);

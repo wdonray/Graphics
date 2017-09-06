@@ -15,6 +15,7 @@ public:
 	~RenderingApp();
 
 	void generateGrid(unsigned int rows, unsigned int cols);
+	Mesh* genreateSphere(float radius, float verts);
 	// our vertex and index buffers
 	unsigned int m_VAO;
 	unsigned int m_VBO;
@@ -24,6 +25,7 @@ public:
 	LoadFile * fl;
 	CameraApp * camapp;
 	Mesh * mesh;
+	Mesh * sphere;
 	Shader * shader;
 	const char * vsSource;
 	const char * fsSource;

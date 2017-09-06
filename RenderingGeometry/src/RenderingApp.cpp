@@ -7,6 +7,7 @@
 #include "CameraApp.h"
 #include "Mesh.h"
 #include "Shader.h"
+#define PI 3.14159265359
 
 
 
@@ -18,6 +19,7 @@ RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0),
 	fl = new LoadFile();
 	camapp = new CameraApp();
 	mesh = new Mesh();
+	sphere = new Mesh();
 	shader = new Shader();
 	rotationView = mat4
 	(1, 0, 0, 0,
@@ -34,6 +36,32 @@ RenderingApp::~RenderingApp()
 	delete camapp;
 	delete mesh; 
 	delete shader;
+	delete sphere;
+}
+
+Mesh* RenderingApp::genreateSphere(float radius, float verts)
+{
+	vector<Vertex> vertices{};
+	float x = radius;
+	float y = 0;
+	float z = 0;
+	for (auto i = 0; i < verts; i++)
+	{
+		float slice = PI / (verts - 1);
+		float theta = i * slice;
+		x = radius * cos(theta);
+		y = radius * sin(theta);
+		z = 0;
+
+		//vertices.push_back(x);
+		//vertices.push_back(y);
+		//vertices.push_back(z);
+	}
+	sphere->initialize(vertices, std::vector<unsigned int>());
+	sphere->Create_Buffers();
+
+	vertices.clear();
+	return nullptr;
 }
 
 //void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
