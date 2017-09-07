@@ -38,9 +38,9 @@ RenderingApp::~RenderingApp()
 	delete sphereMesh;
 }
 
-Mesh* RenderingApp::generateHalfCircle(float radius, float numPoints)
+vector<vec4> RenderingApp::generateHalfCircle(float radius, float numPoints)
 {
-	auto sphereVerts = vector<Vertex>();
+	auto sphereVerts = vector<vec4>();
 	float x = radius;
 	float y = 0;
 	float z = 0;
@@ -54,16 +54,13 @@ Mesh* RenderingApp::generateHalfCircle(float radius, float numPoints)
 
 		auto test = Vertex();
 		test.position = vec4(x, y, z, 1);
-		test.color = vec4(x, y, z, 1);
-		sphereVerts.push_back(test);
+		sphereVerts.push_back(test.position);
 	}
-	sphereMesh->initialize(sphereVerts, vector<unsigned int>());
-	return sphereMesh;
+	return sphereVerts;
 }
 
 Mesh* RenderingApp::generateCube()
 {
-
 	Vertex a0 = { vec4(0, 0, 0, 1), vec4(1, 1, 1, 1) };
 	Vertex b1 = { vec4(3, 0, 0, 1), vec4(1, 1, 1, 1) };
 	Vertex c2 = { vec4(0, 0, -3, 1), vec4(1, 1, 1, 1) };
@@ -98,20 +95,24 @@ Mesh* RenderingApp::generateCube()
 	return cubeMesh;
 }
 
-Mesh* RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
+vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 {
-	float phi = two_pi<float>() / slice;
-	float newX, newY, newZ;
-	for (int i = 0; i < points.size(); i++)
+	float phi = two_pi<float>() / numMeridians;
+	auto sphereVerts = vector<vec4>();
+	for (int i = 0; i < numMeridians; i++)
 	{
-		for (int j = 0; j < numMeridians; j++)
+		for (int j = 0; j < points.size(); j++)
 		{
-			newX = points[j].x * cos(phi) + points[j].z * sin(phi);
-			newY = points[j].y;
-			newZ = points[j].z * cos(phi) - points[j].x * sin(phi);
+			float newX = points[j].z * cos(i * phi) + points[j].x * sin(i * phi);
+			float newY = points[j].y;
+			float newZ = points[j].z * -sin(i * phi) + points[j].x * cos(i * phi);
+
+			auto test = Vertex();
+			test.position = vec4(newX, newY, newZ, 1);
+			sphereVerts.push_back(test.position);
 		}
 	}
-	return sphereMesh;
+	return sphereVerts;
 }
 
 //void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
@@ -160,18 +161,23 @@ Mesh* RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 bool RenderingApp::startup()
 {
 	setBackgroundColor(1, 1, 1, 1.0f);
-	cam->setLookAt(vec3(10, 10, 10), vec3(1, 3, 1), vec3(0, 1, 0));
+	cam->setLookAt(vec3(15, 5, 15), vec3(5, 0, 5), vec3(0, 1, 0));
 
 	shader->load("vsSource.vert", GL_VERTEX_SHADER);
-	shader->load("fsSource.vert", GL_FRAGMENT_SHADER);
+	shader->load("fsSource.frag", GL_FRAGMENT_SHADER);
 	shader->attach();
 
 	cubeMesh = generateCube();
 	cubeMesh->Create_Buffers();
 
-	sphereMesh = generateHalfCircle(1, 1000);
-	sphereMesh = rotatePoints()
-		sphereMesh->Create_Buffers();
+	vector<vec4> halfCircle = generateHalfCircle(1, 20);
+	vector<vec4> rotateCircle = rotatePoints(halfCircle, 50);
+	vector<Vertex> verts;
+	for (auto p : rotateCircle)
+		verts.push_back(Vertex{ p });
+
+	sphereMesh->initialize(verts, vector<unsigned int>());
+	sphereMesh->Create_Buffers();
 	return false;
 }
 
@@ -196,19 +202,20 @@ bool RenderingApp::draw()
 	//unsigned int time = glGetUniformLocation(m_programID, "time");
 	unsigned int projectionViewUniform = shader->getUniform("projectionViewWorldMatrix");
 	unsigned int time = shader->getUniform("time");
-
+	glUniform1f(time, glfwGetTime());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	shader->bind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	/*cubeMesh->bind();
 	rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
+	
+	cubeMesh->bind();
+	mat4 scaleDown = scale(vec3(.1f, .1f, .1f));
 	glUniform1f(time, glfwGetTime());
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * rotationView));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * scaleDown ));
 	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
 	cubeMesh->unbind();
 
-	cubeMesh->bind();
+	/*cubeMesh->bind();
 	mat4 newModel1 = translate(vec3(5, 0, 0));
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel1 * rotationView));
 	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
@@ -226,20 +233,21 @@ bool RenderingApp::draw()
 	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
 	cubeMesh->unbind();
 */
-	rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
+
+
 	sphereMesh->bind();
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * translate(vec3(0, -.5, 0))
-		* rotationView));
+	mat4 scale5 = scale(vec3(5, 5, 5));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * translate(vec3(0, -10, 0)) * scale5 * rotationView));
 	glDrawArrays(GL_POINTS, 0, sphereMesh->vertRef.size());
 	sphereMesh->unbind();
 
-	//How to Scale
-	cubeMesh->bind();
-	mat4 newModel4 = glm::scale(glm::mat4(1), glm::vec3(.1f, .1f, .1f));
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel4 *
-		rotationView * translate(vec3(0, 25, 0))));
-	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	cubeMesh->unbind();
+	////How to Scale
+	//cubeMesh->bind();
+	//mat4 newModel4 = scale(mat4(1), vec3(.1f, .1f, .1f));
+	//glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel4 *
+	//	rotationView * translate(vec3(0, 25, 0))));
+	//glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	//cubeMesh->unbind();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	shader->unbind();

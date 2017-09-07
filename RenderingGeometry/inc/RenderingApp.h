@@ -16,8 +16,8 @@ public:
 	~RenderingApp();
 
 	//void generateGrid(unsigned int rows, unsigned int cols);
-	Mesh* generateHalfCircle(float radius, float numPoints);
-	Mesh* rotatePoints(std::vector<glm::vec4> points, float numMeridians);
+	std::vector<glm::vec4> generateHalfCircle(float radius, float numPoints);
+	std::vector<glm::vec4> rotatePoints(std::vector<glm::vec4> points, float numMeridians);
 	Mesh* generateCube();
 
 	// our vertex and index buffers
