@@ -15,7 +15,7 @@ public:
 	~RenderingApp();
 
 	void generateGrid(unsigned int rows, unsigned int cols);
-	Mesh* genreateSphere(float radius, float verts);
+	Mesh* genreateSphere(float radius, float verts) const;
 	// our vertex and index buffers
 	unsigned int m_VAO;
 	unsigned int m_VBO;
@@ -33,6 +33,7 @@ public:
 	unsigned int m_cols;
 	float runTime;
 	glm::mat4 rotationView;
+
 protected:
 	bool startup() override;
 	bool shutdown() override;

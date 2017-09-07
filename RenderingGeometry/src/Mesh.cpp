@@ -1,8 +1,7 @@
 #include "Mesh.h"
 #include <gl_core_4_4.h>
-#include <gl_core_4_4.h>
 
-Mesh::Mesh() : index_count(0), vertex_count(0), m_VAO(0), m_VBO(0), m_IBO(0)
+Mesh::Mesh() : index_count(0), vertex_count(0), vertRef(m_vertices), m_VAO(0), m_VBO(0), m_IBO(0)
 {
 }
 

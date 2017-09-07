@@ -39,13 +39,13 @@ RenderingApp::~RenderingApp()
 	delete sphere;
 }
 
-Mesh* RenderingApp::genreateSphere(float radius, float verts)
+Mesh* RenderingApp::genreateSphere(float radius, float verts) const
 {
-	vector<Vertex> vertices{};
+	vector<Vertex> sphereVerts = std::vector<Vertex>();
 	float x = radius;
 	float y = 0;
 	float z = 0;
-	for (auto i = 0; i < verts; i++)
+	for (auto i = 0; i < verts * 2; i++)
 	{
 		float slice = PI / (verts - 1);
 		float theta = i * slice;
@@ -53,15 +53,13 @@ Mesh* RenderingApp::genreateSphere(float radius, float verts)
 		y = radius * sin(theta);
 		z = 0;
 
-		//vertices.push_back(x);
-		//vertices.push_back(y);
-		//vertices.push_back(z);
+		auto test = Vertex();
+		test.position = vec4(x, y, z, 1);
+		test.color = vec4(x, y, z, 1);
+		sphereVerts.push_back(test);
 	}
-	sphere->initialize(vertices, std::vector<unsigned int>());
-	sphere->Create_Buffers();
-
-	vertices.clear();
-	return nullptr;
+	sphere->initialize(sphereVerts, vector<unsigned int>());
+	return sphere;
 }
 
 //void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
@@ -151,6 +149,9 @@ bool RenderingApp::startup()
 
 	vertices.clear();
 	indices.clear();
+
+	sphere = genreateSphere(1, 1000);
+	sphere->Create_Buffers();
 	return false;
 }
 
@@ -204,6 +205,11 @@ bool RenderingApp::draw()
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel3 * rotationView));
 	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, nullptr);
 	mesh->unbind();
+
+	sphere->bind();
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
+	glDrawArrays(GL_POINTS, 0, sphere->vertRef.size());
+	sphere->unbind();
 
 	//How to Scale
 	//mesh->bind();
