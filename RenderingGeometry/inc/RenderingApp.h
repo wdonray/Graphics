@@ -1,6 +1,7 @@
 #pragma once
 #include "Application.h"
 #include <glm/glm.hpp>
+#include <vector>
 struct Camera;
 struct LoadFile;
 struct CameraApp;
@@ -14,8 +15,11 @@ public:
 	RenderingApp();
 	~RenderingApp();
 
-	void generateGrid(unsigned int rows, unsigned int cols);
-	Mesh* genreateSphere(float radius, float verts) const;
+	//void generateGrid(unsigned int rows, unsigned int cols);
+	Mesh* generateHalfCircle(float radius, float numPoints);
+	Mesh* rotatePoints(std::vector<glm::vec4> points, float numMeridians);
+	Mesh* generateCube();
+
 	// our vertex and index buffers
 	unsigned int m_VAO;
 	unsigned int m_VBO;
@@ -24,14 +28,16 @@ public:
 	Camera * cam;
 	LoadFile * fl;
 	CameraApp * camapp;
-	Mesh * mesh;
-	Mesh * sphere;
+	Mesh * cubeMesh;
+	Mesh * sphereMesh;
 	Shader * shader;
 	const char * vsSource;
 	const char * fsSource;
 	unsigned int m_rows;
 	unsigned int m_cols;
 	float runTime;
+	float slice;
+	float theta;
 	glm::mat4 rotationView;
 
 protected:

@@ -19,6 +19,7 @@ public:
 	unsigned int index_count;
 	unsigned int vertex_count;
 	std::vector<Vertex>& vertRef;
+	float x, y, z;
 private:
 	unsigned int m_VAO;
 	unsigned int m_VBO;

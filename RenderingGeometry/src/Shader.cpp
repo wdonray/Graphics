@@ -23,10 +23,9 @@ void Shader::unbind()
 	glUseProgram(0);
 }
 
-
 void Shader::attach()
 {
-	int success = GL_FALSE;
+	auto success = GL_FALSE;
 	m_program = glCreateProgram();
 	glAttachShader(m_program, m_vertexShader);
 	glAttachShader(m_program, m_fragmentShader);
@@ -34,9 +33,9 @@ void Shader::attach()
 	glGetProgramiv(m_program, GL_LINK_STATUS, &success);
 	if (success == GL_FALSE)
 	{
-		int infoLogLength = 0;
+		auto infoLogLength = 0;
 		glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &infoLogLength);
-		char* infoLog = new char[infoLogLength];
+		auto infoLog = new char[infoLogLength];
 		glGetProgramInfoLog(m_program, infoLogLength, nullptr, infoLog);
 		printf("Error: Failed to link shader program!\n");
 		printf("%s\n", infoLog);
@@ -62,13 +61,13 @@ void Shader::load(const char * filename, unsigned int type)
 	case GL_VERTEX_SHADER:
 		vsSource = fl->load(filename);
 		m_vertexShader = glCreateShader(type);
-		glShaderSource(m_vertexShader, 1, (const char**)&vsSource, nullptr);
+		glShaderSource(m_vertexShader, 1, static_cast<const char**>(&vsSource), nullptr);
 		glCompileShader(m_vertexShader);
 		break;
 	case GL_FRAGMENT_SHADER:
 		fsSource = fl->load(filename);
 		m_fragmentShader = glCreateShader(type);
-		glShaderSource(m_fragmentShader, 1, (const char**)&fsSource, nullptr);
+		glShaderSource(m_fragmentShader, 1, static_cast<const char**>(&fsSource), nullptr);
 		glCompileShader(m_fragmentShader);
 		break;
 	default:
