@@ -12,7 +12,7 @@
 
 RenderingApp::RenderingApp() : m_VAO(0), m_VBO(0), m_IBO(0), m_programID(0),
 cam(nullptr), fl(nullptr), shader(nullptr), vsSource(nullptr),
-fsSource(nullptr), m_rows(0), m_cols(0), runTime(0), slice(0), theta(0)
+fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
 {
 	cam = new Camera();
 	fl = new LoadFile();
@@ -37,7 +37,7 @@ RenderingApp::~RenderingApp()
 	delete shader;
 	delete sphereMesh;
 }
-
+//Generate a half circle
 vector<vec4> RenderingApp::generateHalfCircle(float radius, float numPoints)
 {
 	auto sphereVerts = vector<vec4>();
@@ -46,8 +46,8 @@ vector<vec4> RenderingApp::generateHalfCircle(float radius, float numPoints)
 	float z = 0;
 	for (auto i = 0; i < numPoints; i++)
 	{
-		slice = PI / (numPoints - 1);
-		theta = i * slice;
+		float slice = PI / (numPoints - 1);
+		float theta = i * slice;
 		x = radius * sin(theta);
 		y = radius * cos(theta);
 		z = 0;
@@ -58,7 +58,7 @@ vector<vec4> RenderingApp::generateHalfCircle(float radius, float numPoints)
 	}
 	return sphereVerts;
 }
-
+//Create a cube
 Mesh* RenderingApp::generateCube()
 {
 	Vertex a0 = { vec4(0, 0, 0, 1), vec4(1, 1, 1, 1) };
@@ -94,18 +94,19 @@ Mesh* RenderingApp::generateCube()
 	cubeMesh->initialize(vertices, indices);
 	return cubeMesh;
 }
-
+//Rotate the points until a sphere is created
 vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 {
-	float phi = two_pi<float>() / numMeridians;
+	float slice = two_pi<float>() / numMeridians;
 	auto sphereVerts = vector<vec4>();
 	for (int i = 0; i < numMeridians; i++)
 	{
+		float phi = i * slice;
 		for (int j = 0; j < points.size(); j++)
 		{
-			float newX = points[j].z * cos(i * phi) + points[j].x * sin(i * phi);
+			float newX = points[j].z * cos(phi) + points[j].x * sin(phi);
 			float newY = points[j].y;
-			float newZ = points[j].z * -sin(i * phi) + points[j].x * cos(i * phi);
+			float newZ = points[j].z * -sin(phi) + points[j].x * cos(phi);
 
 			auto test = Vertex();
 			test.position = vec4(newX, newY, newZ, 1);
@@ -113,6 +114,19 @@ vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 		}
 	}
 	return sphereVerts;
+}
+
+std::vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int np)
+{
+	auto sphereIndices = vector<unsigned int>();
+	for (int i = 0; i < np; i++)
+	{
+		for (int j = 0; j < nm; j++)
+		{
+			
+		}
+	}
+	return sphereIndices;
 }
 
 //void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
@@ -239,6 +253,7 @@ bool RenderingApp::draw()
 	mat4 scale5 = scale(vec3(5, 5, 5));
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * translate(vec3(0, -10, 0)) * scale5 * rotationView));
 	glDrawArrays(GL_POINTS, 0, sphereMesh->vertRef.size());
+	//glDrawElements(GL_TRIANGLE_STRIP, sphereMesh->index_count, GL_UNSIGNED_INT, nullptr);
 	sphereMesh->unbind();
 
 	////How to Scale
