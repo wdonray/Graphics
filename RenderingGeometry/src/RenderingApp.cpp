@@ -135,12 +135,14 @@ std::vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int
 	auto sphereIndices = vector<unsigned int>();
 	for (int i = 0; i < nm; i++)
 	{
+		unsigned int start = i * np;
+
 		for (int j = 0; j < np; j++)
 		{
-			unsigned int left = j + i * np;
-			unsigned int right = j + (i + 1) * np;
-			sphereIndices.push_back(left);
-			sphereIndices.push_back(right);
+			unsigned int botleft = start + j;
+			unsigned int botright = botleft + np;
+			sphereIndices.push_back(botleft);
+			sphereIndices.push_back(botright);
 		}
 		sphereIndices.push_back(0xFFFF);
 	}
@@ -202,8 +204,8 @@ bool RenderingApp::startup()
 	cubeMesh = generateCube();
 	cubeMesh->Create_Buffers();
 
-	vector<vec4> halfCircle = generateHalfCircle(1, 10);
-	vector<vec4> rotateCircle = rotatePoints(halfCircle, 10);
+	vector<vec4> halfCircle = generateHalfCircle(1, 5);
+	vector<vec4> rotateCircle = rotatePoints(halfCircle, 7);
 
 	vector<Vertex> verts;
 
@@ -213,7 +215,7 @@ bool RenderingApp::startup()
 	for (auto p : rotateCircle)
 		verts.push_back(Vertex{ p });
 
-	sphereMesh->initialize(verts, genIndices(10, 10));
+	sphereMesh->initialize(verts, genIndices(7, 5));
 	sphereMesh->Create_Buffers();
 	return false;
 }
