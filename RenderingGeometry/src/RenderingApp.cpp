@@ -101,7 +101,21 @@ vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 	auto sphereVerts = vector<vec4>();
 	for (int i = 0; i < numMeridians; i++)
 	{
-		float phi = i * slice;
+		float phi = static_cast<float>(i) * slice;
+		for (int j = 0; j < points.size(); j++)
+		{
+			float newX = points[j].z * cos(phi) + points[j].x * sin(phi);
+			float newY = points[j].y;
+			float newZ = points[j].z * -sin(phi) + points[j].x * cos(phi);
+
+			auto test = Vertex();
+			test.position = vec4(newX, newY, newZ, 1);
+			sphereVerts.push_back(test.position);
+		}
+	}
+	for (int i = 0; i < 1; i++)
+	{
+		float phi = static_cast<float>(i) * slice;
 		for (int j = 0; j < points.size(); j++)
 		{
 			float newX = points[j].z * cos(phi) + points[j].x * sin(phi);
@@ -119,12 +133,16 @@ vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 std::vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int np)
 {
 	auto sphereIndices = vector<unsigned int>();
-	for (int i = 0; i < np; i++)
+	for (int i = 0; i < nm; i++)
 	{
-		for (int j = 0; j < nm; j++)
+		for (int j = 0; j < np; j++)
 		{
-			
+			unsigned int left = j + i * np;
+			unsigned int right = j + (i + 1) * np;
+			sphereIndices.push_back(left);
+			sphereIndices.push_back(right);
 		}
+		sphereIndices.push_back(0xFFFF);
 	}
 	return sphereIndices;
 }
@@ -184,13 +202,18 @@ bool RenderingApp::startup()
 	cubeMesh = generateCube();
 	cubeMesh->Create_Buffers();
 
-	vector<vec4> halfCircle = generateHalfCircle(1, 20);
-	vector<vec4> rotateCircle = rotatePoints(halfCircle, 50);
+	vector<vec4> halfCircle = generateHalfCircle(1, 10);
+	vector<vec4> rotateCircle = rotatePoints(halfCircle, 10);
+
 	vector<Vertex> verts;
+
+	//for (auto original : halfCircle)
+	//	rotateCircle.push_back(original);
+
 	for (auto p : rotateCircle)
 		verts.push_back(Vertex{ p });
 
-	sphereMesh->initialize(verts, vector<unsigned int>());
+	sphereMesh->initialize(verts, genIndices(10, 10));
 	sphereMesh->Create_Buffers();
 	return false;
 }
@@ -220,12 +243,12 @@ bool RenderingApp::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	shader->bind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	rotationView = rotationView * rotate(0.1f, vec3(0, 1, 0));
-	
+	rotationView = rotationView * rotate(0.01f, vec3(0, 1, 0));
+
 	cubeMesh->bind();
 	mat4 scaleDown = scale(vec3(.1f, .1f, .1f));
 	glUniform1f(time, glfwGetTime());
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * scaleDown ));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * scaleDown));
 	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
 	cubeMesh->unbind();
 
@@ -252,8 +275,12 @@ bool RenderingApp::draw()
 	sphereMesh->bind();
 	mat4 scale5 = scale(vec3(5, 5, 5));
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * translate(vec3(0, -10, 0)) * scale5 * rotationView));
-	glDrawArrays(GL_POINTS, 0, sphereMesh->vertRef.size());
-	//glDrawElements(GL_TRIANGLE_STRIP, sphereMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	glEnable(GL_PRIMITIVE_RESTART);
+	//glDrawArrays(GL_POINTS, 0, sphereMesh->vertRef.size());
+	glDrawElements(GL_TRIANGLE_STRIP, sphereMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	glPrimitiveRestartIndex(0xFFFF);
+	glDisable(GL_PRIMITIVE_RESTART);
+
 	sphereMesh->unbind();
 
 	////How to Scale
