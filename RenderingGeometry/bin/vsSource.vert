@@ -6,7 +6,7 @@ uniform mat4 projectionViewWorldMatrix;
 uniform float time;
 void main() 
 { 
-	vec4 c = vec4(colour.x * sin(time), colour.y * cos(time), colour.z * tan(time), 1);	
+	vec4 c = vec4(colour.x * abs(cos(time)), colour.y * abs(sin(time)), colour.z * abs(tan(time)), 1);	
 	vColour = c;
     gl_Position = projectionViewWorldMatrix * position;
  }

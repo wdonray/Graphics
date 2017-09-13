@@ -20,6 +20,7 @@ fsSource(nullptr), m_rows(0), m_cols(0), runTime(0)
 	cubeMesh = new Mesh();
 	sphereMesh = new Mesh();
 	shader = new Shader();
+	gridMesh = new Mesh();
 	rotationView = mat4
 	(1, 0, 0, 0,
 		0, 1, 0, 0,
@@ -130,7 +131,7 @@ vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 	return sphereVerts;
 }
 
-std::vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int np)
+vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int np)
 {
 	auto sphereIndices = vector<unsigned int>();
 	for (int i = 0; i < nm; i++)
@@ -149,48 +150,57 @@ std::vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int
 	return sphereIndices;
 }
 
-//void RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
-//{
-//	auto aoVertices = new Vertex[rows * cols];
-//	for (unsigned int r = 0; r < rows; ++r)
-//	{
-//		for (unsigned int c = 0; c < cols; ++c)
-//		{
-//			aoVertices[r * cols + c].position = vec4((float)c, 0, (float)r, 1);
-//			//Create some arbitrary color based off something
-//			//that might not be related to tiling a tecture
-//			vec3 colour = vec3(sinf((c / (float)(cols - 1)) * (r / (float)(rows - 1))));
-//			aoVertices[r * cols + c].color = vec4(colour, 1);
-//		}
-//	}
-//	//Defining index count based off quad count (2 triangles per quad)
-//	unsigned int* auiIndices = new unsigned int[(rows - 1) * (cols - 1) * 6];
-//	unsigned int index = 0;
-//	for (unsigned int r = 0; r < (rows - 1); ++r)
-//	{
-//		for (unsigned int c = 0; c < (cols - 1); ++c)
-//		{
-//			//Triangle 1
-//			auiIndices[index++] = r * cols + c;
-//			auiIndices[index++] = (r + 1) * cols + c;
-//			auiIndices[index++] = (r + 1) * cols + (c + 1);
-//			//Triangle 2
-//			auiIndices[index++] = r * cols + c;
-//			auiIndices[index++] = (r + 1) * cols + (c + 1);
-//			auiIndices[index++] = r * cols + (c + 1);
-//		}
-//	}
-//
-//
-//
-//	//Create and bind buffers to a vertex array object
-//
-//	m_rows = rows;
-//	m_cols = cols;
-//
-//	delete[] aoVertices;
-//	delete[] auiIndices;
-//}
+Mesh* RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
+{
+	auto aoVertices = new Vertex[rows * cols];
+	for (unsigned int r = 0; r < rows; ++r)
+	{
+		for (unsigned int c = 0; c < cols; ++c)
+		{
+			aoVertices[r * cols + c].position = vec4((float)c, 0, (float)r, 1);
+			//Create some arbitrary color based off something
+			//that might not be related to tiling a tecture
+			vec3 colour = vec3(sinf((c / (float)(cols - 1)) * (r / (float)(rows - 1))));
+			aoVertices[r * cols + c].color = vec4(colour, 1);
+		}
+	}
+
+	vector<Vertex> verts = vector<Vertex>();
+	vector<unsigned int> indices = vector<unsigned int>();
+
+	//Defining index count based off quad count (2 triangles per quad)
+	unsigned int* auiIndices = new unsigned int[(rows - 1) * (cols - 1) * 6];
+	unsigned int index = 0;
+	for (unsigned int r = 0; r < (rows - 1); ++r)
+	{
+		for (unsigned int c = 0; c < (cols - 1); ++c)
+		{
+			//Triangle 1
+			auiIndices[index++] = r * cols + c;
+			auiIndices[index++] = (r + 1) * cols + c;
+			auiIndices[index++] = (r + 1) * cols + (c + 1);
+			//Triangle 2
+			auiIndices[index++] = r * cols + c;
+			auiIndices[index++] = (r + 1) * cols + (c + 1);
+			auiIndices[index++] = r * cols + (c + 1);
+		}
+	}
+	//Create and bind buffers to a vertex array object
+	m_rows = rows;
+	m_cols = cols;
+
+	for (unsigned int i = 0; i < (rows * cols); i++)
+		verts.push_back(aoVertices[i]);
+	for (unsigned int i = 0; i < index; i++)
+		indices.push_back(auiIndices[i]);
+
+	gridMesh->initialize(verts, indices);
+	gridMesh->bind();
+
+	delete[] aoVertices;
+	delete[] auiIndices;
+	return gridMesh;
+}
 
 bool RenderingApp::startup()
 {
@@ -204,19 +214,22 @@ bool RenderingApp::startup()
 	cubeMesh = generateCube();
 	cubeMesh->Create_Buffers();
 
-	vector<vec4> halfCircle = generateHalfCircle(1, 5);
-	vector<vec4> rotateCircle = rotatePoints(halfCircle, 7);
+	vector<vec4> halfCircle = generateHalfCircle(1, 13);
+	vector<vec4> rotateCircle = rotatePoints(halfCircle, 10);
 
 	vector<Vertex> verts;
 
-	//for (auto original : halfCircle)
-	//	rotateCircle.push_back(original);
-
 	for (auto p : rotateCircle)
-		verts.push_back(Vertex{ p });
+	{
+		Vertex v = Vertex{ p,p };
+		verts.push_back(v);
+	}
 
-	sphereMesh->initialize(verts, genIndices(7, 5));
+	sphereMesh->initialize(verts, genIndices(10, 13));
 	sphereMesh->Create_Buffers();
+
+	gridMesh = generateGrid(10, 10);
+	gridMesh->Create_Buffers();
 	return false;
 }
 
@@ -245,14 +258,15 @@ bool RenderingApp::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	shader->bind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	rotationView = rotationView * rotate(0.01f, vec3(0, 1, 0));
 
-	cubeMesh->bind();
-	mat4 scaleDown = scale(vec3(.1f, .1f, .1f));
-	glUniform1f(time, glfwGetTime());
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * scaleDown));
-	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	cubeMesh->unbind();
+	//cubeMesh->bind();
+	//mat4 scaleDown = scale(vec3(.1f, .1f, .1f));
+	//glUniform1f(time, glfwGetTime());
+	//glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * scaleDown));
+	//glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	//cubeMesh->unbind();
 
 	/*cubeMesh->bind();
 	mat4 newModel1 = translate(vec3(5, 0, 0));
@@ -276,14 +290,18 @@ bool RenderingApp::draw()
 
 	sphereMesh->bind();
 	mat4 scale5 = scale(vec3(5, 5, 5));
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * translate(vec3(0, -10, 0)) * scale5 * rotationView));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() *translate(vec3(20, 0, 20)) * scale5 * rotationView));
 	glEnable(GL_PRIMITIVE_RESTART);
 	//glDrawArrays(GL_POINTS, 0, sphereMesh->vertRef.size());
 	glDrawElements(GL_TRIANGLE_STRIP, sphereMesh->index_count, GL_UNSIGNED_INT, nullptr);
 	glPrimitiveRestartIndex(0xFFFF);
 	glDisable(GL_PRIMITIVE_RESTART);
-
 	sphereMesh->unbind();
+
+	gridMesh->bind();
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
+	glDrawElements(GL_TRIANGLES, gridMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	gridMesh->unbind();
 
 	////How to Scale
 	//cubeMesh->bind();
@@ -293,7 +311,6 @@ bool RenderingApp::draw()
 	//glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
 	//cubeMesh->unbind();
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	shader->unbind();
 	return false;
 }

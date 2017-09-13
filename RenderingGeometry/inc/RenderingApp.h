@@ -15,7 +15,7 @@ public:
 	RenderingApp();
 	~RenderingApp();
 
-	//void generateGrid(unsigned int rows, unsigned int cols);
+	Mesh* generateGrid(unsigned int rows, unsigned int cols);
 	std::vector<glm::vec4> generateHalfCircle(float radius, float numPoints);
 	std::vector<glm::vec4> rotatePoints(std::vector<glm::vec4> points, float numMeridians);
 	std::vector<unsigned int> genIndices(unsigned int nm, unsigned int np);
@@ -31,6 +31,7 @@ public:
 	CameraApp * camapp;
 	Mesh * cubeMesh;
 	Mesh * sphereMesh;
+	Mesh * gridMesh;
 	Shader * shader;
 	const char * vsSource;
 	const char * fsSource;
