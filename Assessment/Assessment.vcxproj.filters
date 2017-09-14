@@ -57,6 +57,12 @@
     <ClInclude Include="inc\LoadFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\gl_core_4_4.c">
@@ -96,6 +102,12 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="src\LoadFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

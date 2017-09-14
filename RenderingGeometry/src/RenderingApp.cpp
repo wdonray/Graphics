@@ -7,6 +7,7 @@
 #include "CameraApp.h"
 #include "Mesh.h"
 #include "Shader.h"
+
 #define PI 3.14159265359
 
 
@@ -130,7 +131,7 @@ vector<vec4> RenderingApp::rotatePoints(vector<vec4> points, float numMeridians)
 	}
 	return sphereVerts;
 }
-
+//Generate the Indicies for the sphere
 vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int np)
 {
 	auto sphereIndices = vector<unsigned int>();
@@ -149,7 +150,7 @@ vector<unsigned int> RenderingApp::genIndices(unsigned int nm, unsigned int np)
 	}
 	return sphereIndices;
 }
-
+//Generate a Grid
 Mesh* RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
 {
 	auto aoVertices = new Vertex[rows * cols];
@@ -204,8 +205,8 @@ Mesh* RenderingApp::generateGrid(unsigned int rows, unsigned int cols)
 
 bool RenderingApp::startup()
 {
-	setBackgroundColor(1, 1, 1, 1.0f);
-	cam->setLookAt(vec3(15, 5, 15), vec3(5, 0, 5), vec3(0, 1, 0));
+	setBackgroundColor(0, 0, 0, 1.0f);
+	cam->setLookAt(vec3(13, 5, 13), vec3(5, 0, 5), vec3(0, 1, 0));
 
 	shader->load("vsSource.vert", GL_VERTEX_SHADER);
 	shader->load("fsSource.frag", GL_FRAGMENT_SHADER);
@@ -228,8 +229,13 @@ bool RenderingApp::startup()
 	sphereMesh->initialize(verts, genIndices(10, 13));
 	sphereMesh->Create_Buffers();
 
-	gridMesh = generateGrid(10, 10);
+	gridMesh = generateGrid(5, 5);
 	gridMesh->Create_Buffers();
+
+	ImGui_ImplGlfwGL3_Init(m_window, true);
+	auto& io = ImGui::GetIO();
+	io.DisplaySize.x = 1600;
+	io.DisplaySize.y = 900;
 	return false;
 }
 
@@ -237,6 +243,7 @@ bool RenderingApp::shutdown()
 {
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) || m_GameOver)
 		glfwSetWindowShouldClose(m_window, true);
+	ImGui_ImplGlfwGL3_Shutdown();
 	return false;
 }
 
@@ -245,6 +252,23 @@ bool RenderingApp::update(float deltaTime)
 	runTime += deltaTime;
 	camapp->Keyboard_Movement(cam, m_window);
 	camapp->Mouse_Movement(cam, m_window);
+
+	auto fps_window = true;
+
+	ImGui_ImplGlfwGL3_NewFrame();
+#pragma region Fps_Window
+	ImGui::Begin("FPS", &fps_window);
+	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
+	ImGui::End();
+#pragma endregion 
+#pragma region Polygon_Mode
+	ImGui::Begin("Polygon Mode");
+	//if (ImGui::Button("Line or Fill"))
+	//{
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//}
+	ImGui::End();
+#pragma endregion 
 	return false;
 }
 
@@ -254,63 +278,38 @@ bool RenderingApp::draw()
 	//unsigned int time = glGetUniformLocation(m_programID, "time");
 	unsigned int projectionViewUniform = shader->getUniform("projectionViewWorldMatrix");
 	unsigned int time = shader->getUniform("time");
-	glUniform1f(time, glfwGetTime());
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	shader->bind();
+	ImGui::Render();
+	glUniform1f(time, glfwGetTime());
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	rotationView = rotationView * rotate(0.01f, vec3(0, 1, 0));
 
-	//cubeMesh->bind();
-	//mat4 scaleDown = scale(vec3(.1f, .1f, .1f));
-	//glUniform1f(time, glfwGetTime());
-	//glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * scaleDown));
-	//glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	//cubeMesh->unbind();
-
-	/*cubeMesh->bind();
-	mat4 newModel1 = translate(vec3(5, 0, 0));
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel1 * rotationView));
-	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	cubeMesh->unbind();
-
 	cubeMesh->bind();
-	mat4 newModel2 = translate(vec3(5, 0, 5));
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel2 * rotationView));
-	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	mat4 scaleDown = scale(vec3(.1f, .1f, .1f));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() *
+		scaleDown * translate(vec3(0, 0, -20))));
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	cubeMesh->draw(GL_TRIANGLES);
 	cubeMesh->unbind();
-
-	cubeMesh->bind();
-	mat4 newModel3 = translate(vec3(0, 0, 5));
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel3 * rotationView));
-	glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	cubeMesh->unbind();
-*/
-
 
 	sphereMesh->bind();
-	mat4 scale5 = scale(vec3(5, 5, 5));
-	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() *translate(vec3(20, 0, 20)) * scale5 * rotationView));
-	glEnable(GL_PRIMITIVE_RESTART);
-	//glDrawArrays(GL_POINTS, 0, sphereMesh->vertRef.size());
-	glDrawElements(GL_TRIANGLE_STRIP, sphereMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	glPrimitiveRestartIndex(0xFFFF);
-	glDisable(GL_PRIMITIVE_RESTART);
+	mat4 scale5 = scale(vec3(1, 1, 1));
+	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() *
+		translate(vec3(7, 1, 7)) * scale5 * rotationView));
+	sphereMesh->draw(GL_TRIANGLE_STRIP);
 	sphereMesh->unbind();
 
 	gridMesh->bind();
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
-	glDrawElements(GL_TRIANGLES, gridMesh->index_count, GL_UNSIGNED_INT, nullptr);
+	gridMesh->draw(GL_TRIANGLES);
 	gridMesh->unbind();
 
 	////How to Scale
-	//cubeMesh->bind();
 	//mat4 newModel4 = scale(mat4(1), vec3(.1f, .1f, .1f));
-	//glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() * newModel4 *
-	//	rotationView * translate(vec3(0, 25, 0))));
-	//glDrawElements(GL_TRIANGLES, cubeMesh->index_count, GL_UNSIGNED_INT, nullptr);
-	//cubeMesh->unbind();
 
 	shader->unbind();
+
 	return false;
 }

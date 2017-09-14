@@ -2,6 +2,8 @@
 #include "Application.h"
 #include <glm/glm.hpp>
 #include <vector>
+#include "imgui/imgui.h"
+#include "imgui_impl_glfw_gl3.h"
 struct Camera;
 struct LoadFile;
 struct CameraApp;
