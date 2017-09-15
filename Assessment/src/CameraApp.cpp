@@ -133,27 +133,27 @@ void CameraApp::Keyboard_Movement(Camera* camera, GLFWwindow* window) const
 {
 	if (glfwGetKey(window, 'A') == GLFW_PRESS)
 	{
-		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[0]);
+		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[0] * .25f);
 	}
 	if (glfwGetKey(window, 'W') == GLFW_PRESS)
 	{
-		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[2]);
+		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[2] * .25f);
 	}
 	if (glfwGetKey(window, 'S') == GLFW_PRESS)
 	{
-		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[2]);
+		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[2] * .25f);
 	}
 	if (glfwGetKey(window, 'D') == GLFW_PRESS)
 	{
-		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[0]);
+		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[0] * .25f);
 	}
 	if (glfwGetKey(window, 'Q') == GLFW_PRESS)
 	{
-		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[1]);
+		camera->setPosition(camera->getWorldTransform()[3] += camera->getWorldTransform()[1] * .25f);
 	}
 	if (glfwGetKey(window, 'E') == GLFW_PRESS)
 	{
-		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[1]);
+		camera->setPosition(camera->getWorldTransform()[3] -= camera->getWorldTransform()[1] * .25f);
 	}
 	if (glfwGetKey(window, 'R') == GLFW_PRESS)
 	{

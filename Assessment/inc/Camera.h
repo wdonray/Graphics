@@ -10,6 +10,7 @@ public:
 	virtual ~Camera();
 
 	mat4 m_position;
+	vec3 m_posvec3;
 	mat4 m_view;
 	virtual void update(float deltaTime);
 	void setPerspective(float FOV, float aspectRatio, float near, float far);

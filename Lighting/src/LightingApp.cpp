@@ -117,18 +117,18 @@ void LightingApp::generateSphere(unsigned segments, unsigned rings, unsigned & v
 bool LightingApp::startup()
 {
 	setBackgroundColor(1, 1, 1, 1.0f);
-	cam->setLookAt(vec3(13, 5, 13), vec3(5, 0, 5), vec3(0, 1, 0));
+	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
 
-	m_directLight.diffuse = vec3(1);
+	m_directLight.diffuse = vec3(0,1,0);
 	m_directLight.specular = vec3(1);
-	m_ambientLight = vec3(0.25f);
+	m_ambientLight = vec3(0,0.25f,0);
 
 	m_material.diffuse = vec3(1);
 	m_material.ambient = vec3(1);
 	m_material.specular = vec3(1);
 
-	m_material.specularPower = 64;
-	generateSphere(32, 32, m_VAO, m_VBO, m_IBO, index_count);
+	m_material.specularPower = 30;
+	generateSphere(100, 100, m_VAO, m_VBO, m_IBO, index_count);
 
 	shader->load("phong.vert", GL_VERTEX_SHADER);
 	shader->load("phong.frag", GL_FRAGMENT_SHADER);
@@ -150,7 +150,8 @@ bool LightingApp::update(float deltaTime)
 	camapp->Keyboard_Movement(cam, m_window);
 	camapp->Mouse_Movement(cam, m_window);
 
-	m_directLight.direction = vec3(sinf(runTime), 0, cosf(runTime));
+	m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime/ 2.f)));
+	//m_directLight.direction = normalize(vec3(10,10,10));
 	return false;
 }
 
@@ -165,14 +166,33 @@ bool LightingApp::draw()
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &pvm[0][0]);
 
 	int lightUniform = shader->getUniform("direction");
-	glUniform3fv(lightUniform, 1, &m_directLight.direction[0]);
+	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.direction));
 
 	lightUniform = shader->getUniform("Id");
-	glUniform3fv(lightUniform, 1, &m_directLight.diffuse[0]);
+	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.diffuse));
 
 	lightUniform = shader->getUniform("Ia");
-	glUniform3fv(lightUniform, 1, &m_ambientLight[0]);
+	glUniform3fv(lightUniform, 1, value_ptr(m_ambientLight));
+
+	lightUniform = shader->getUniform("Is");
+	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.specular));
+
+	lightUniform = shader->getUniform("Ka");
+	glUniform3fv(lightUniform, 1, value_ptr(m_material.ambient));
+
+	lightUniform = shader->getUniform("Kd");
+	glUniform3fv(lightUniform, 1, value_ptr(m_material.diffuse));
 	
+	lightUniform = shader->getUniform("Ks");
+	glUniform3fv(lightUniform, 1, value_ptr(m_material.specular));
+
+	lightUniform = shader->getUniform("a");
+	glUniform1f(lightUniform, m_material.specularPower);
+	
+	lightUniform = shader->getUniform("camPos");
+	//glUniform3fv(lightUniform, 1, value_ptr(glm::vec3(cam->getProjectionView()[3][0], cam->getProjectionView()[3][1], cam->getProjectionView()[3][2])));
+	glUniform3fv(lightUniform, 1, value_ptr(cam->m_posvec3));
+
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
 	shader->unbind();

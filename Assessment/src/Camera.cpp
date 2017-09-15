@@ -2,8 +2,8 @@
 #include <glm/gtc/matrix_transform.inl>
 #include <glm/gtc/constants.inl>
 
-Camera::Camera() : m_fov(0), m_aspectRatio(0), m_near(0), m_far(0),
-                   m_worldTransform(1), m_projection(1), m_projectionViewTransform(1)
+Camera::Camera() : m_posvec3(5,5,5), m_fov(0), m_aspectRatio(0), m_near(0),
+                   m_far(0), m_worldTransform(1), m_projection(1), m_projectionViewTransform(1)
 {
 	setPerspective(pi<float>() / 4.f, 16 / 9.f, 0.1f, 1000.f);
 	//setOrthographicView(-15, 15, -15, 20, -10, 50);
@@ -102,6 +102,8 @@ void Camera::setPosition(vec3 position)
 	m_transform->rotate(pi<float>() * 0.25f, ZAXIS);
 	m_transform->translate(position);
 	m_view = inverse(m_worldTransform);
+
+	this->m_posvec3 = this->m_posvec3 + position;
 }
 
 void Camera::setSpeed(float speed)
