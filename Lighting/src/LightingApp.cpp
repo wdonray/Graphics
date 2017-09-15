@@ -9,7 +9,7 @@
 
 #define PI 3.14159265359
 
-LightingApp::LightingApp() : runTime(0)
+LightingApp::LightingApp() : runTime(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), m_modelMatrix(1)
 {
 	cam = new Camera();
 	camapp = new CameraApp();
@@ -118,7 +118,22 @@ bool LightingApp::startup()
 {
 	setBackgroundColor(1, 1, 1, 1.0f);
 	cam->setLookAt(vec3(13, 5, 13), vec3(5, 0, 5), vec3(0, 1, 0));
+
+	m_directLight.diffuse = vec3(1);
+	m_directLight.specular = vec3(1);
+	m_ambientLight = vec3(0.25f);
+
+	m_material.diffuse = vec3(1);
+	m_material.ambient = vec3(1);
+	m_material.specular = vec3(1);
+
+	m_material.specularPower = 64;
 	generateSphere(32, 32, m_VAO, m_VBO, m_IBO, index_count);
+
+	shader->load("phong.vert", GL_VERTEX_SHADER);
+	shader->load("phong.frag", GL_FRAGMENT_SHADER);
+	shader->attach();
+	m_modelMatrix = scale(vec3(5));
 	return false;
 }
 
@@ -134,17 +149,32 @@ bool LightingApp::update(float deltaTime)
 	runTime += deltaTime;
 	camapp->Keyboard_Movement(cam, m_window);
 	camapp->Mouse_Movement(cam, m_window);
+
+	m_directLight.direction = vec3(sinf(runTime), 0, cosf(runTime));
 	return false;
 }
 
 bool LightingApp::draw()
 {
-	unsigned int projectionViewUniform = shader->getUniform("projectionViewWorldMatrix");
-	unsigned int time = shader->getUniform("time");
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	shader->bind();
+	mat4 pvm = cam->getProjectionView() * m_modelMatrix;
 
+	int matUniform = shader->getUniform("ProjectionViewModel");
+	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &pvm[0][0]);
+
+	int lightUniform = shader->getUniform("direction");
+	glUniform3fv(lightUniform, 1, &m_directLight.direction[0]);
+
+	lightUniform = shader->getUniform("Id");
+	glUniform3fv(lightUniform, 1, &m_directLight.diffuse[0]);
+
+	lightUniform = shader->getUniform("Ia");
+	glUniform3fv(lightUniform, 1, &m_ambientLight[0]);
+	
+	glBindVertexArray(m_VAO);
+	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
 	shader->unbind();
 	return false;
 }

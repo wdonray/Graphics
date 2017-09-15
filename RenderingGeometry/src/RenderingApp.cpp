@@ -299,7 +299,7 @@ bool RenderingApp::draw()
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView() *
 		translate(vec3(7, 1, 7)) * scale5 * rotationView));
 	sphereMesh->draw(GL_TRIANGLE_STRIP);
-	sphereMesh->unbind();
+	sphereMesh->unbind(); 
 
 	gridMesh->bind();
 	glUniformMatrix4fv(projectionViewUniform, 1, false, value_ptr(cam->getProjectionView()));
