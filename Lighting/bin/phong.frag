@@ -29,25 +29,65 @@ vec4 hemi(vec4 skyc, vec4 groundc, vec4 normal)
 	vec4 result = mix(groundc, skyc, lightin);
 	return result;
 }
+
+vec3 Ambient(vec3 Ka, vec3 Ia)
+{
+	return Ka * Ia;
+}
+
+vec3 Diffuse(vec3 Kd, vec3 Id, vec3 Lm, vec3 N)
+{
+	float NdL = max(0.0f, dot(Lm, N));
+
+	return Kd * Id * NdL;
+}
+
+vec3 Specular(vec3 Ks, vec3 Is, vec3 Lm, vec3 N, vec3 camPosition, vec3 position)
+{
+	vec3 R = reflect(Lm, N);
+	vec3 E = normalize(camPosition - position);
+
+	float specularTerm = pow(max(0.0f ,dot (R, E)), a);
+	 
+	return Ks * Is * specularTerm;
+}
+
 void main()
 {
-	vec4 N = vNormal;
+	vec3 N = normalize(vNormal.xyz);
 
-	float NdL = max(0.0f, dot(direction, vec3(N))); // lambert term
-	
-	vec3 R = reflect(direction, vec3(N));		    // reflected light vector
-	vec3 E = normalize(camPos - vec3(vPosition));  // surface to eye vector
+	vec3 ambient = Ambient(Ka, Ia);
 
-	float specularTerm = max(0.0f ,dot (R, E));
-	float specTerm = pow(specularTerm, a);         // specular term
-	
-	vec3 Ambient = Ka * Ia; // ambient light
-	vec3 Diffuse = Kd * Id * NdL;				 // diffused light for one light
-	vec3 Specular = Ks * specTerm * Is;			  // specular light for one light
+	vec3 diffuse = Diffuse(Kd, Id, normalize(direction), N);
 
-	FragColor = vec4(Ambient + Diffuse + Specular, 1);
+	vec3 specular = Specular(Ks, Is, normalize(direction), N, camPos, vPosition.xyz);
 
-	vec4 sky = vec4(0, 0, .5f, 1);
-	vec4 ground = vec4(.25, .5f, 0, 1);
-	//FragColor = hemi(sky, ground, vNormal);
+	FragColor = vec4(ambient + diffuse + specular, 1);
 }
+
+
+
+
+
+
+
+
+	//vec4 N = vNormal;
+
+	//float NdL = max(0.0f, dot(direction, vec3(N))); // lambert term
+	
+	//vec3 R = reflect(direction, vec3(N));		    // reflected light vector
+	//vec3 E = normalize(camPos - vec3(vPosition));  // surface to eye vector
+
+	//float specularTerm = max(0.0f ,dot (R, E));
+	//float specTerm = pow(specularTerm, a);         // specular term
+	
+	//vec3 Ambient = Ka * Ia; // ambient light
+	//vec3 Diffuse = Kd * Id * NdL;				 // diffused light for one light
+	//vec3 Specular = Ks * specTerm * Is;			  // specular light for one light
+
+	//FragColor = vec4(Ambient + Diffuse + Specular, 1);
+
+	//vec4 sky = vec4(0, 0, .5f, 1);
+	//vec4 ground = vec4(.25, .5f, 0, 1);
+	//FragColor = hemi(sky, ground, vNormal);

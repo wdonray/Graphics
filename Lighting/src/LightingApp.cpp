@@ -151,7 +151,22 @@ bool LightingApp::update(float deltaTime)
 	camapp->Mouse_Movement(cam, m_window);
 
 	m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime/ 2.f)));
-	//m_directLight.direction = normalize(vec3(10,10,10));
+
+	if (glfwGetKey(m_window, GLFW_KEY_F1))
+	{
+		m_material.specularPower += .2f;
+		printf("Raised Specular Power by .2: %f\n", m_material.specularPower);
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_F2))
+	{
+		m_material.specularPower -= .2f;
+		printf("Lower Specular Power by .2: %f\n", m_material.specularPower);
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_F3))
+		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
+	if (glfwGetKey(m_window, GLFW_KEY_F4))
+		m_directLight.direction = normalize(vec3(10, 10, 10));
+
 	return false;
 }
 
