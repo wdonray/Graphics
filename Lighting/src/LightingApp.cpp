@@ -197,7 +197,7 @@ bool LightingApp::update(float deltaTime)
 	if (glfwGetKey(m_window, GLFW_KEY_F3))
 		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
 	if (glfwGetKey(m_window, GLFW_KEY_F4))
-		m_directLight.direction = vec3(0, 10, 0);
+		m_directLight.direction = normalize(vec3(0, 10, 0));
 
 	auto fps_window = true;
 	ImGui_ImplGlfwGL3_NewFrame();

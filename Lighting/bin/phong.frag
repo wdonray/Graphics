@@ -48,9 +48,9 @@ void main()
 
 	vec3 ambient = Ambient(Ka, Ia);
 
-	vec3 diffuse = Diffuse(Kd, Id, normalize(direction), N);
+	vec3 diffuse = Diffuse(Kd, Id, -normalize(direction), N);
 
-	vec3 specular = Specular(Ks, Is, normalize(direction), N, camPos, vPosition.xyz);
+	vec3 specular = Specular(Ks, Is, -normalize(direction), N, camPos, vPosition.xyz);
 
 	FragColor = vec4(ambient + diffuse + specular, 1);
 }
