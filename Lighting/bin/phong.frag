@@ -1,8 +1,5 @@
 // Phong equation
 #version 410
-
-
-
 uniform vec3 direction;
 uniform vec3 Id;
 uniform vec3 Is;
@@ -70,7 +67,7 @@ void main()
 
 
 
-
+//////Before 
 
 	//vec4 N = vNormal;
 
