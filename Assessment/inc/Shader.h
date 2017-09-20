@@ -7,7 +7,7 @@ public:
 	~Shader();
 	void bind();
 	void unbind();
-	void load(const char * filename, unsigned int type);
+	void load(const char * filename, unsigned int type, bool isFile);
 	void attach();
 	void defaultLoad();
 	unsigned int getUniform(const char * name);

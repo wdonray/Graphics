@@ -8,7 +8,8 @@
 #include <Mesh.h>
 
 #define PI 3.14159265359
-
+static char fbuffer[5000];
+static char vbuffer[5000];
 LightingApp::LightingApp() : runTime(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), m_modelMatrix(1)
 {
 	cam = new Camera();
@@ -42,7 +43,7 @@ void LightingApp::generateSphere(unsigned segments, unsigned rings, unsigned& va
 		float r0 = sin(ring * ringAngle);
 		float y0 = cos(ring * ringAngle);
 
-		for (unsigned int segment = 0; segment < (segments + 1); ++segment , ++vertex)
+		for (unsigned int segment = 0; segment < (segments + 1); ++segment, ++vertex)
 		{
 			float x0 = r0 * sin(segment * segmentAngle);
 			float z0 = r0 * cos(segment * segmentAngle);
@@ -120,14 +121,29 @@ void LightingApp::generateSphere(unsigned segments, unsigned rings, unsigned& va
 	delete[] vertices;
 }
 
+int LightingApp::TextEditCallBackStub(ImGuiTextEditCallbackData* data)
+{
+	auto app = static_cast<LightingApp*>(data->UserData);
+	return app->TextEditCallback(data);
+}
+
+int LightingApp::TextEditCallback(ImGuiTextEditCallbackData* data)
+{
+	ShaderData *sd = static_cast<ShaderData*>(data->UserData);
+	Shader* shader = sd->shader;
+	shader->load(sd->source, sd->type, sd->isFile);
+	shader->attach();
+	return 1;
+}
+
 bool LightingApp::startup()
 {
-	setBackgroundColor(1, 1, 1, 1.0f);
+	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
 
 	m_directLight.diffuse = vec3(0, 1, 0);
 	m_directLight.specular = vec3(1);
-	m_ambientLight = vec3(0, 0.25f, 0);
+	m_ambientLight = vec3(0, 0, 0);
 
 	m_material.diffuse = vec3(1);
 	m_material.ambient = vec3(1);
@@ -136,10 +152,16 @@ bool LightingApp::startup()
 	m_material.specularPower = 30;
 	generateSphere(100, 100, m_VAO, m_VBO, m_IBO, index_count);
 
-	shader->load("phong.vert", GL_VERTEX_SHADER);
-	shader->load("phong.frag", GL_FRAGMENT_SHADER);
+	shader->load("phong.vert", GL_VERTEX_SHADER, true);
+	shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
+	memcpy(vbuffer, shader->vsSource, 5000);
+	memcpy(fbuffer, shader->fsSource, 5000);
 	m_modelMatrix = scale(vec3(5));
+	ImGui_ImplGlfwGL3_Init(m_window, true);
+	auto& io = ImGui::GetIO();
+	io.DisplaySize.x = 1600;
+	io.DisplaySize.y = 900;
 	return false;
 }
 
@@ -153,8 +175,12 @@ bool LightingApp::shutdown()
 bool LightingApp::update(float deltaTime)
 {
 	runTime += deltaTime;
-	camapp->Keyboard_Movement(cam, m_window);
-	camapp->Mouse_Movement(cam, m_window);
+	auto g = ImGui::GetCurrentContext();
+	if (ImGui::IsAnyItemActive() != true || ImGui::IsAnyItemHovered() != true)
+	{
+		camapp->Keyboard_Movement(cam, m_window);
+		camapp->Mouse_Movement(cam, m_window);
+	}
 
 	m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
 
@@ -171,8 +197,88 @@ bool LightingApp::update(float deltaTime)
 	if (glfwGetKey(m_window, GLFW_KEY_F3))
 		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
 	if (glfwGetKey(m_window, GLFW_KEY_F4))
-		m_directLight.direction = normalize(vec3(10, 10, 10));
+		m_directLight.direction = vec3(0, 10, 0);
 
+	auto fps_window = true;
+	ImGui_ImplGlfwGL3_NewFrame();
+#pragma region Fps_Window
+	ImGui::Begin("FPS", &fps_window);
+	ImGui::SetWindowPos(ImVec2(0, 130));
+	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
+	ImGui::End();
+#pragma endregion
+#pragma region Color
+	ImGui::Begin("Color");
+	ImGui::SetWindowPos(ImVec2(0, 180));
+	//ImGui::SliderFloat("Red Value", &redValue, 0.0f, 1.0f);
+	//ImGui::SliderFloat("Green Value", &greenValue, 0.0f, 1.0f);
+	//ImGui::SliderFloat("Blue Value", &blueValue, 0.0f, 1.0f);
+	ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color));
+	ImGui::ColorEdit3("ball color", reinterpret_cast<float*>(&ball_color));
+	m_ambientLight = vec3(ball_color.x, ball_color.y, ball_color.z);
+	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	ImGui::End();
+#pragma endregion
+#pragma region Menu
+	if (ImGui::BeginMainMenuBar())
+	{
+		float tex_w = (float)ImGui::GetIO().Fonts->TexWidth;
+		float tex_h = (float)ImGui::GetIO().Fonts->TexHeight;
+		ImTextureID tex_id = ImGui::GetIO().Fonts->TexID;
+		if (ImGui::BeginMenu("File  -"))
+		{
+			//ImGui::MenuItem("test", NULL, false, false);
+			//if (ImGui::MenuItem("New")) {}
+			//for (int i = 0; i < 10; i++)
+			//	ImGui::Text("Scrolling Text %d", i);
+			if(ImGui::BeginMenu("Load Frag"))
+			{
+				if (ImGui::MenuItem("Hemi Frag"))
+				{
+					shader->load("hemi.frag", GL_FRAGMENT_SHADER, true);
+					shader->attach();
+				}
+				if (ImGui::MenuItem("Phong Frag"))
+				{
+					shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
+					shader->attach();
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::MenuItem("Restart")) { startup(); }
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Restart if you are deep");
+			if (ImGui::MenuItem("Quit", "Alt+F4")) { glfwSetWindowShouldClose(m_window, true); }
+			static int n = 2;
+			ImGui::Combo("Are you amazing?", &n, "Yes\0No\0");
+			if (n == 1)
+				glfwSetWindowShouldClose(m_window, true);
+			else if (n == 0)
+			{
+				ImGui::Text("%.0fx%.0f", tex_w, tex_h);
+				ImGui::Image(tex_id, ImVec2(tex_w, tex_h), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::SetNextWindowSize(ImVec2(500, 500));
+		if (ImGui::BeginMenu("Phong Frag  -"))
+		{
+			auto sd = ShaderData{ shader, fbuffer, GL_FRAGMENT_SHADER, false };
+			ImGui::InputTextMultiline("Frag Shader", fbuffer, sizeof fbuffer, ImGui::GetWindowSize(),
+				ImGuiInputTextFlags_CallbackAlways, TextEditCallBackStub, static_cast<void*>(&sd));
+			ImGui::EndMenu();
+		}
+		ImGui::SetNextWindowSize(ImVec2(500, 500));
+		if (ImGui::BeginMenu("Phong Vert"))
+		{
+			auto sd = ShaderData{ shader, vbuffer, GL_FRAGMENT_SHADER, false };
+			ImGui::InputTextMultiline("Vert Shader", vbuffer, sizeof vbuffer, ImGui::GetWindowSize(),
+				ImGuiInputTextFlags_CallbackAlways, TextEditCallBackStub, static_cast<void*>(&sd));
+			ImGui::EndMenu();
+		}
+	}
+	ImGui::EndMainMenuBar();
+#pragma endregion
 	return false;
 }
 
@@ -181,6 +287,7 @@ bool LightingApp::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	shader->bind();
+
 	mat4 pvm = cam->getProjectionView() * m_modelMatrix;
 
 	int matUniform = shader->getUniform("ProjectionViewModel");
@@ -216,6 +323,7 @@ bool LightingApp::draw()
 
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
+	ImGui::Render();
 	shader->unbind();
 	return false;
 }

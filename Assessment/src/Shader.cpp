@@ -54,24 +54,48 @@ unsigned Shader::getUniform(const char* name)
 	return glGetUniformLocation(m_program, name);
 }
 
-void Shader::load(const char * filename, unsigned int type)
+void Shader::load(const char * filename, unsigned int type, bool isFile)
 {
-	switch (type)
+	if (isFile == true)
 	{
-	case GL_VERTEX_SHADER:
-		vsSource = fl->load(filename);
-		m_vertexShader = glCreateShader(type);
-		glShaderSource(m_vertexShader, 1, static_cast<const char**>(&vsSource), nullptr);
-		glCompileShader(m_vertexShader);
-		break;
-	case GL_FRAGMENT_SHADER:
-		fsSource = fl->load(filename);
-		m_fragmentShader = glCreateShader(type);
-		glShaderSource(m_fragmentShader, 1, static_cast<const char**>(&fsSource), nullptr);
-		glCompileShader(m_fragmentShader);
-		break;
-	default:
-		printf("You should not be loading this");
-		break;
+		switch (type)
+		{
+		case GL_VERTEX_SHADER:
+			vsSource = fl->load(filename);
+			m_vertexShader = glCreateShader(type);
+			glShaderSource(m_vertexShader, 1, static_cast<const char**>(&vsSource), nullptr);
+			glCompileShader(m_vertexShader);
+			break;
+		case GL_FRAGMENT_SHADER:
+			fsSource = fl->load(filename);
+			m_fragmentShader = glCreateShader(type);
+			glShaderSource(m_fragmentShader, 1, static_cast<const char**>(&fsSource), nullptr);
+			glCompileShader(m_fragmentShader);
+			break;
+		default:
+			printf("You should not be loading this");
+			break;
+		}
+	}
+	else if (isFile == false)
+	{
+		switch (type)
+		{
+		case GL_VERTEX_SHADER:
+			vsSource = filename;
+			m_vertexShader = glCreateShader(type);
+			glShaderSource(m_vertexShader, 1, static_cast<const char**>(&vsSource), nullptr);
+			glCompileShader(m_vertexShader);
+			break;
+		case GL_FRAGMENT_SHADER:
+			fsSource = filename;
+			m_fragmentShader = glCreateShader(type);
+			glShaderSource(m_fragmentShader, 1, static_cast<const char**>(&fsSource), nullptr);
+			glCompileShader(m_fragmentShader);
+			break;
+		default:
+			printf("You should not be loading this");
+			break;
+		}
 	}
 }
