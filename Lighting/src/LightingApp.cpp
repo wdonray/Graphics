@@ -22,9 +22,11 @@ LightingApp::~LightingApp()
 	delete camapp;
 	delete cam;
 	delete shader;
+	//delete vbuffer;
+	//delete fbuffer;
 }
 
-void LightingApp::generateSphere(unsigned segments, unsigned rings, unsigned& vao, unsigned& vbo, unsigned& ibo, unsigned& indexCount)
+void LightingApp::generateSphere(unsigned segments, unsigned rings, unsigned& vao, unsigned& vbo, unsigned& ibo, unsigned& indexCount) const
 {
 	unsigned int vertCount = (segments + 1) * (rings + 2);
 	indexCount = segments * (rings + 1) * 6;
@@ -129,76 +131,15 @@ int LightingApp::TextEditCallBackStub(ImGuiTextEditCallbackData* data)
 
 int LightingApp::TextEditCallback(ImGuiTextEditCallbackData* data)
 {
-	ShaderData *sd = static_cast<ShaderData*>(data->UserData);
-	Shader* shader = sd->shader;
+	auto sd = static_cast<ShaderData*>(data->UserData);
+	auto shader = sd->shader;
 	shader->load(sd->source, sd->type, sd->isFile);
 	shader->attach();
 	return 1;
 }
 
-bool LightingApp::startup()
+void LightingApp::onGUI()
 {
-	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
-
-	m_directLight.diffuse = vec3(0, 1, 0);
-	m_directLight.specular = vec3(1);
-	m_ambientLight = vec3(0, 0, 0);
-
-	m_material.diffuse = vec3(1);
-	m_material.ambient = vec3(1);
-	m_material.specular = vec3(1);
-
-	m_material.specularPower = 30;
-	generateSphere(100, 100, m_VAO, m_VBO, m_IBO, index_count);
-
-	shader->load("phong.vert", GL_VERTEX_SHADER, true);
-	shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
-	shader->attach();
-	memcpy(vbuffer, shader->vsSource, 5000);
-	memcpy(fbuffer, shader->fsSource, 5000);
-	m_modelMatrix = scale(vec3(5));
-	ImGui_ImplGlfwGL3_Init(m_window, true);
-	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = 1600;
-	io.DisplaySize.y = 900;
-	return false;
-}
-
-bool LightingApp::shutdown()
-{
-	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) || m_GameOver)
-		glfwSetWindowShouldClose(m_window, true);
-	return false;
-}
-
-bool LightingApp::update(float deltaTime)
-{
-	runTime += deltaTime;
-	auto g = ImGui::GetCurrentContext();
-	if (ImGui::IsAnyItemActive() != true || ImGui::IsAnyItemHovered() != true)
-	{
-		camapp->Keyboard_Movement(cam, m_window);
-		camapp->Mouse_Movement(cam, m_window);
-	}
-
-	m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
-
-	if (glfwGetKey(m_window, GLFW_KEY_F1))
-	{
-		m_material.specularPower += .2f;
-		printf("Raised Specular Power by .2: %f\n", m_material.specularPower);
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_F2))
-	{
-		m_material.specularPower -= .2f;
-		printf("Lower Specular Power by .2: %f\n", m_material.specularPower);
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_F3))
-		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
-	if (glfwGetKey(m_window, GLFW_KEY_F4))
-		m_directLight.direction = normalize(vec3(0, 10, 0));
-
 	auto fps_window = true;
 	ImGui_ImplGlfwGL3_NewFrame();
 #pragma region Fps_Window
@@ -207,16 +148,54 @@ bool LightingApp::update(float deltaTime)
 	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
 	ImGui::End();
 #pragma endregion
+
 #pragma region Color
 	ImGui::Begin("Color");
 	ImGui::SetWindowPos(ImVec2(0, 180));
-
 	ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color));
 	ImGui::ColorEdit3("ball color", reinterpret_cast<float*>(&ball_color));
 	m_ambientLight = vec3(ball_color.x, ball_color.y, ball_color.z);
 	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	ImGui::End();
 #pragma endregion
+
+#pragma region Rotate
+
+	ImGui::Begin("Rotation");
+	ImGui::SetWindowPos(ImVec2(0, 265));
+	if (ImGui::Button("Rotate Light"))
+	{
+		rotate = true;
+		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
+	}
+	ImGui::BeginGroup();
+	if (ImGui::Button("Light at Bottom"))
+	{ 
+		rotate = false;
+		m_directLight.direction = normalize(vec3(0, 10, 0));
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Light at Right"))
+	{
+		rotate = false;
+		m_directLight.direction = normalize(vec3(0, 0, 10));
+	}
+	ImGui::BeginGroup();
+	ImGui::EndGroup();
+	if (ImGui::Button("Light at Left"))
+	{
+		rotate = false;
+		m_directLight.direction = normalize(vec3(10, 0, 0));
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Light at Top"))
+	{
+		rotate = false;
+		m_directLight.direction = normalize(vec3(0, -10, 0));
+	}
+	ImGui::EndGroup();
+	ImGui::End();
+#pragma endregion 
 #pragma region Menu
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -225,7 +204,7 @@ bool LightingApp::update(float deltaTime)
 		ImTextureID tex_id = ImGui::GetIO().Fonts->TexID;
 		if (ImGui::BeginMenu("File  -"))
 		{
-			if(ImGui::BeginMenu("Load Frag"))
+			if (ImGui::BeginMenu("Load Frag"))
 			{
 				if (ImGui::MenuItem("Hemi Frag"))
 				{
@@ -244,9 +223,11 @@ bool LightingApp::update(float deltaTime)
 				}
 				ImGui::EndMenu();
 			}
+
 			if (ImGui::MenuItem("Restart")) { startup(); }
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Restart if you are deep");
+
 			if (ImGui::MenuItem("Quit", "Alt+F4")) { glfwSetWindowShouldClose(m_window, true); }
 			static auto n = 2;
 			ImGui::Combo("Are you amazing?", &n, "Yes\0No\0");
@@ -278,6 +259,75 @@ bool LightingApp::update(float deltaTime)
 	}
 	ImGui::EndMainMenuBar();
 #pragma endregion
+}
+
+bool LightingApp::startup()
+{
+	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
+
+	m_directLight.diffuse = vec3(0, 1, 0);
+	m_directLight.specular = vec3(1);
+	m_ambientLight = vec3(0, 0, 0);
+
+	m_material.diffuse = vec3(1);
+	m_material.ambient = vec3(1);
+	m_material.specular = vec3(1);
+
+	m_material.specularPower = 30;
+	generateSphere(100, 100, m_VAO, m_VBO, m_IBO, index_count);
+
+	shader->load("phong.vert", GL_VERTEX_SHADER, true);
+	shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
+	shader->attach();
+
+	memmove(vbuffer, shader->vsSource, 5000);
+	memmove(fbuffer, shader->fsSource, 5000);
+
+	m_modelMatrix = scale(vec3(5));
+
+	ImGui_ImplGlfwGL3_Init(m_window, true);
+	auto& io = ImGui::GetIO();
+	io.DisplaySize.x = 1600;
+	io.DisplaySize.y = 900;
+	return false;
+}
+
+bool LightingApp::shutdown()
+{
+	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) || m_GameOver)
+		glfwSetWindowShouldClose(m_window, true);
+	return false;
+}
+
+bool LightingApp::update(float deltaTime)
+{
+	runTime += deltaTime;
+	auto g = ImGui::GetCurrentContext();
+	if (ImGui::IsAnyItemActive() != true || ImGui::IsAnyItemHovered() != true)
+	{
+		camapp->Keyboard_Movement(cam, m_window);
+		camapp->Mouse_Movement(cam, m_window);
+	}
+	if (rotate == true)
+		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
+
+	if (glfwGetKey(m_window, GLFW_KEY_F1))
+	{
+		m_material.specularPower += .2f;
+		printf("Raised Specular Power by .2: %f\n", m_material.specularPower);
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_F2))
+	{
+		m_material.specularPower -= .2f;
+		printf("Lower Specular Power by .2: %f\n", m_material.specularPower);
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_F3))
+		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
+	if (glfwGetKey(m_window, GLFW_KEY_F4))
+		m_directLight.direction = normalize(vec3(0, 10, 0));
+
+	onGUI();
 	return false;
 }
 

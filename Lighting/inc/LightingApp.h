@@ -14,13 +14,15 @@ class LightingApp :
 public:
 	LightingApp();
 	~LightingApp();
-	void generateSphere(unsigned segments, unsigned rings, unsigned& vao, unsigned& vbo, unsigned& ibo, unsigned& indexCount);
+	void generateSphere(unsigned segments, unsigned rings, unsigned& vao, unsigned& vbo, unsigned& ibo, unsigned& indexCount) const;
 	static int TextEditCallBackStub(ImGuiTextEditCallbackData* data);
-	int TextEditCallback(ImGuiTextEditCallbackData* data);
+	static int TextEditCallback(ImGuiTextEditCallbackData* data);
+
 	Camera * cam;
 	CameraApp * camapp;
 	Shader * shader;
 	float runTime;
+	bool rotate = true;
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;
@@ -28,6 +30,7 @@ public:
 	ImVec4 ball_color = ImColor(0,0,0);
 	ImVec4 clear_color = ImColor(114, 144, 154);
 private:
+	void onGUI();
 	struct DirectionalLight
 	{
 		glm::vec3 direction;

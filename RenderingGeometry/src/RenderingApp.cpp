@@ -208,8 +208,8 @@ bool RenderingApp::startup()
 	setBackgroundColor(0, 0, 0, 1.0f);
 	cam->setLookAt(vec3(13, 5, 13), vec3(5, 0, 5), vec3(0, 1, 0));
 
-	shader->load("vsSource.vert", GL_VERTEX_SHADER);
-	shader->load("fsSource.frag", GL_FRAGMENT_SHADER);
+	shader->load("vsSource.vert", GL_VERTEX_SHADER, true);
+	shader->load("fsSource.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
 
 	cubeMesh = generateCube();
@@ -259,14 +259,6 @@ bool RenderingApp::update(float deltaTime)
 #pragma region Fps_Window
 	ImGui::Begin("FPS", &fps_window);
 	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
-	ImGui::End();
-#pragma endregion 
-#pragma region Polygon_Mode
-	ImGui::Begin("Polygon Mode");
-	//if (ImGui::Button("Line or Fill"))
-	//{
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//}
 	ImGui::End();
 #pragma endregion 
 	return false;
