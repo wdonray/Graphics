@@ -25,17 +25,17 @@ vec3 Ambient(vec3 Ka, vec3 Ia)
 	return Ka * Ia;
 }
 
-vec3 Diffuse(vec3 Kd, vec3 Id, vec3 Lm, vec3 N)
+vec3 Diffuse(vec3 Kd, vec3 Id, vec3 L, vec3 N)
 {
-	float NdL = max(0.0f, dot(Lm, N));
+	float NdL = max(0.0f, dot(L, N));
 
 	return Kd * Id * NdL;
 }
 
-vec3 Specular(vec3 Ks, vec3 Is, vec3 Lm, vec3 N, vec3 camPosition, vec3 position)
+vec3 Specular(vec3 Ks, vec3 Is, vec3 L, vec3 N, vec3 camPosition, vec3 position)
 {
 	vec3 E = normalize(camPosition - position);
-	vec3 halfway = normalize(Lm + E);
+	vec3 halfway = normalize(L + E);
 
     float specularTerm = max(dot(halfway, N), 0.0f);
 	 
@@ -52,7 +52,7 @@ void main()
 
 	vec3 diffuse = Diffuse(Kd, Id, normalize(direction), N);
 
-	vec3 specular = Specular(Ks, Is, normalize(direction), N, camPos, vPosition.xyz);
+	vec3 specular = Specular(Ks, Is, -normalize(direction), -N, camPos, vPosition.xyz);
 
 	FragColor = vec4(ambient + diffuse + specular, 1);
 }

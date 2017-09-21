@@ -9,12 +9,12 @@
 
 #define PI 3.14159265359
 static char fbuffer[5000];
-static char vbuffer[5000];
-LightingApp::LightingApp() : runTime(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), m_modelMatrix(1)
+LightingApp::LightingApp() : runTime(0), m_rows(0), m_cols(0), segments(0), rings(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), m_modelMatrix(1)
 {
 	cam = new Camera();
 	camapp = new CameraApp();
 	shader = new Shader();
+	gridMesh = new Mesh();
 }
 
 LightingApp::~LightingApp()
@@ -22,8 +22,7 @@ LightingApp::~LightingApp()
 	delete camapp;
 	delete cam;
 	delete shader;
-	//delete vbuffer;
-	//delete fbuffer;
+	delete gridMesh;
 }
 
 void LightingApp::generateSphere(unsigned segments, unsigned rings, unsigned& vao, unsigned& vbo, unsigned& ibo, unsigned& indexCount) const
@@ -152,8 +151,8 @@ void LightingApp::onGUI()
 #pragma region Color
 	ImGui::Begin("Color");
 	ImGui::SetWindowPos(ImVec2(0, 180));
-	ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color));
-	ImGui::ColorEdit3("ball color", reinterpret_cast<float*>(&ball_color));
+	ImGui::ColorEdit3("Clear color", reinterpret_cast<float*>(&clear_color));
+	ImGui::ColorEdit3("Light color", reinterpret_cast<float*>(&ball_color));
 	m_ambientLight = vec3(ball_color.x, ball_color.y, ball_color.z);
 	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	ImGui::End();
@@ -161,48 +160,70 @@ void LightingApp::onGUI()
 
 #pragma region Rotate
 
-	ImGui::Begin("Rotation");
+	ImGui::Begin("Light Position");
 	ImGui::SetWindowPos(ImVec2(0, 265));
+	ImGui::BeginGroup();
 	if (ImGui::Button("Rotate Light"))
 	{
 		rotate = true;
-		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
-	}
-	ImGui::BeginGroup();
-	if (ImGui::Button("Light at Bottom"))
-	{ 
-		rotate = false;
-		m_directLight.direction = normalize(vec3(0, 10, 0));
+		rotateSpeed -= .1;
+		m_directLight.direction = normalize(vec3(sinf(runTime / rotateSpeed), 0, cosf(runTime / rotateSpeed)));
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Light at Right"))
+	ImGui::Text("Runtime / Speed value (%f)", rotateSpeed);
+	if (ImGui::Button("Pause Rotation"))
 	{
 		rotate = false;
-		m_directLight.direction = normalize(vec3(0, 0, 10));
+		m_directLight.direction = normalize(vec3(0, 1, 0));
 	}
-	ImGui::BeginGroup();
-	ImGui::EndGroup();
-	if (ImGui::Button("Light at Left"))
-	{
-		rotate = false;
-		m_directLight.direction = normalize(vec3(10, 0, 0));
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Light at Top"))
-	{
-		rotate = false;
-		m_directLight.direction = normalize(vec3(0, -10, 0));
-	}
+	//ImGui::BeginGroup();
+	//if (ImGui::Button("Light at Bottom"))
+	//{ 
+	//	rotate = false;
+	//	m_directLight.direction = normalize(vec3(0, 10, 0));
+	//}
+	//ImGui::SameLine();
+	//if (ImGui::Button("Light at Right"))
+	//{
+	//	rotate = false;
+	//	m_directLight.direction = normalize(vec3(0, 0, 10));
+	//}
+	//ImGui::BeginGroup();
+	//ImGui::EndGroup();
+	//if (ImGui::Button("Light at Left"))
+	//{
+	//	rotate = false;
+	//	m_directLight.direction = normalize(vec3(10, 0, 0));
+	//}
+	//ImGui::SameLine();
+	//if (ImGui::Button("Light at Top"))
+	//{
+	//	rotate = false;
+	//	m_directLight.direction = normalize(vec3(0, -10, 0));
+	//}
+	ImGui::DragFloat3("Light Direction", &m_directLight.direction[0], 0.01f, -1, 1);
+	ImGui::DragFloat("Specular Power", &m_material.specularPower, 1, 0, 99999);
 	ImGui::EndGroup();
 	ImGui::End();
+	//ImGui::ShowTestWindow();
 #pragma endregion 
+
+#pragma region Fill/ Line
+	ImGui::Begin("Fill / Line");
+	ImGui::SetWindowPos(ImVec2(0, 390));
+	if (ImGui::Checkbox("Fill", &fill))
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	ImGui::End();
+#pragma endregion
+
 #pragma region Menu
 	if (ImGui::BeginMainMenuBar())
 	{
 		float tex_w = static_cast<float>(ImGui::GetIO().Fonts->TexWidth);
 		float tex_h = static_cast<float>(ImGui::GetIO().Fonts->TexHeight);
 		ImTextureID tex_id = ImGui::GetIO().Fonts->TexID;
-		if (ImGui::BeginMenu("File  -"))
+		if (ImGui::BeginMenu("File"))
 		{
 			if (ImGui::BeginMenu("Load Frag"))
 			{
@@ -224,9 +245,9 @@ void LightingApp::onGUI()
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::MenuItem("Restart")) { startup(); }
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Restart if you are deep");
+			//if (ImGui::MenuItem("Restart")) { startup(); }
+			//if (ImGui::IsItemHovered())
+			//	ImGui::SetTooltip("Restart if you are deep");
 
 			if (ImGui::MenuItem("Quit", "Alt+F4")) { glfwSetWindowShouldClose(m_window, true); }
 			static auto n = 2;
@@ -241,18 +262,10 @@ void LightingApp::onGUI()
 			ImGui::EndMenu();
 		}
 		ImGui::SetNextWindowSize(ImVec2(500, 500));
-		if (ImGui::BeginMenu("Phong Frag  -"))
+		if (ImGui::BeginMenu("Phong Frag"))
 		{
 			auto sd = ShaderData{ shader, fbuffer, GL_FRAGMENT_SHADER, false };
 			ImGui::InputTextMultiline("Frag Shader", fbuffer, sizeof fbuffer, ImGui::GetWindowSize(),
-				ImGuiInputTextFlags_CallbackAlways, TextEditCallBackStub, static_cast<void*>(&sd));
-			ImGui::EndMenu();
-		}
-		ImGui::SetNextWindowSize(ImVec2(500, 500));
-		if (ImGui::BeginMenu("Phong Vert"))
-		{
-			auto sd = ShaderData{ shader, vbuffer, GL_FRAGMENT_SHADER, false };
-			ImGui::InputTextMultiline("Vert Shader", vbuffer, sizeof vbuffer, ImGui::GetWindowSize(),
 				ImGuiInputTextFlags_CallbackAlways, TextEditCallBackStub, static_cast<void*>(&sd));
 			ImGui::EndMenu();
 		}
@@ -260,6 +273,58 @@ void LightingApp::onGUI()
 	ImGui::EndMainMenuBar();
 #pragma endregion
 }
+Mesh* LightingApp::generateGrid(unsigned int rows, unsigned int cols)
+{
+	auto aoVertices = new Vertex[rows * cols];
+	for (unsigned int r = 0; r < rows; ++r)
+	{
+		for (unsigned int c = 0; c < cols; ++c)
+		{
+			aoVertices[r * cols + c].position = vec4((float)c, 0, (float)r, 1);
+			//Create some arbitrary color based off something
+			//that might not be related to tiling a tecture
+			vec3 colour = vec3(sinf((c / (float)(cols - 1)) * (r / (float)(rows - 1))));
+			aoVertices[r * cols + c].color = vec4(colour, 1);
+		}
+	}
+
+	vector<Vertex> verts = vector<Vertex>();
+	vector<unsigned int> indices = vector<unsigned int>();
+
+	//Defining index count based off quad count (2 triangles per quad)
+	unsigned int* auiIndices = new unsigned int[(rows - 1) * (cols - 1) * 6];
+	unsigned int index = 0;
+	for (unsigned int r = 0; r < (rows - 1); ++r)
+	{
+		for (unsigned int c = 0; c < (cols - 1); ++c)
+		{
+			//Triangle 1
+			auiIndices[index++] = r * cols + c;
+			auiIndices[index++] = (r + 1) * cols + c;
+			auiIndices[index++] = (r + 1) * cols + (c + 1);
+			//Triangle 2
+			auiIndices[index++] = r * cols + c;
+			auiIndices[index++] = (r + 1) * cols + (c + 1);
+			auiIndices[index++] = r * cols + (c + 1);
+		}
+	}
+	//Create and bind buffers to a vertex array object
+	m_rows = rows;
+	m_cols = cols;
+
+	for (unsigned int i = 0; i < (rows * cols); i++)
+		verts.push_back(aoVertices[i]);
+	for (unsigned int i = 0; i < index; i++)
+		indices.push_back(auiIndices[i]);
+
+	gridMesh->initialize(verts, indices);
+	gridMesh->bind();
+
+	delete[] aoVertices;
+	delete[] auiIndices;
+	return gridMesh;
+}
+
 
 bool LightingApp::startup()
 {
@@ -275,13 +340,14 @@ bool LightingApp::startup()
 	m_material.specular = vec3(1);
 
 	m_material.specularPower = 30;
-	generateSphere(100, 100, m_VAO, m_VBO, m_IBO, index_count);
+	segments = 100;
+	rings = 100;
+	generateSphere(segments, rings, m_VAO, m_VBO, m_IBO, index_count);
 
 	shader->load("phong.vert", GL_VERTEX_SHADER, true);
 	shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
 
-	memmove(vbuffer, shader->vsSource, 5000);
 	memmove(fbuffer, shader->fsSource, 5000);
 
 	m_modelMatrix = scale(vec3(5));
@@ -303,47 +369,33 @@ bool LightingApp::shutdown()
 bool LightingApp::update(float deltaTime)
 {
 	runTime += deltaTime;
-	auto g = ImGui::GetCurrentContext();
 	if (ImGui::IsAnyItemActive() != true || ImGui::IsAnyItemHovered() != true)
 	{
 		camapp->Keyboard_Movement(cam, m_window);
 		camapp->Mouse_Movement(cam, m_window);
 	}
 	if (rotate == true)
-		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
-
-	if (glfwGetKey(m_window, GLFW_KEY_F1))
-	{
-		m_material.specularPower += .2f;
-		printf("Raised Specular Power by .2: %f\n", m_material.specularPower);
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_F2))
-	{
-		m_material.specularPower -= .2f;
-		printf("Lower Specular Power by .2: %f\n", m_material.specularPower);
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_F3))
-		m_directLight.direction = normalize(vec3(sinf(runTime / 2.f), 0, cosf(runTime / 2.f)));
-	if (glfwGetKey(m_window, GLFW_KEY_F4))
-		m_directLight.direction = normalize(vec3(0, 10, 0));
+		m_directLight.direction = normalize(vec3(sinf(runTime / rotateSpeed), 0, cosf(runTime / rotateSpeed)));
 
 	onGUI();
+
 	return false;
 }
 
 bool LightingApp::draw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	shader->bind();
 
+	if (fill)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	shader->bind();
 	mat4 pvm = cam->getProjectionView() * m_modelMatrix;
 
 	int matUniform = shader->getUniform("ProjectionViewModel");
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &pvm[0][0]);
 
 	int lightUniform = shader->getUniform("direction");
-	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.direction));
+	glUniform3fv(lightUniform, 1, value_ptr(-m_directLight.direction));
 
 	lightUniform = shader->getUniform("Id");
 	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.diffuse));
@@ -367,12 +419,14 @@ bool LightingApp::draw()
 	glUniform1f(lightUniform, m_material.specularPower);
 
 	lightUniform = shader->getUniform("camPos");
-	//glUniform3fv(lightUniform, 1, value_ptr(glm::vec3(cam->getProjectionView()[3][0], cam->getProjectionView()[3][1], cam->getProjectionView()[3][2])));
 	glUniform3fv(lightUniform, 1, value_ptr(cam->m_posvec3));
 
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
-	ImGui::Render();
+
+
 	shader->unbind();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	ImGui::Render();
 	return false;
 }

@@ -17,12 +17,18 @@ public:
 	void generateSphere(unsigned segments, unsigned rings, unsigned& vao, unsigned& vbo, unsigned& ibo, unsigned& indexCount) const;
 	static int TextEditCallBackStub(ImGuiTextEditCallbackData* data);
 	static int TextEditCallback(ImGuiTextEditCallbackData* data);
-
+	Mesh* generateGrid(unsigned int rows, unsigned int cols);
 	Camera * cam;
 	CameraApp * camapp;
 	Shader * shader;
+	Mesh * gridMesh;
 	float runTime;
+	float rotateSpeed = 2.f;
 	bool rotate = true;
+	bool fill = true;
+	unsigned int m_rows;
+	unsigned int m_cols;
+	unsigned segments, rings;
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;
