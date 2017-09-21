@@ -210,9 +210,7 @@ bool LightingApp::update(float deltaTime)
 #pragma region Color
 	ImGui::Begin("Color");
 	ImGui::SetWindowPos(ImVec2(0, 180));
-	//ImGui::SliderFloat("Red Value", &redValue, 0.0f, 1.0f);
-	//ImGui::SliderFloat("Green Value", &greenValue, 0.0f, 1.0f);
-	//ImGui::SliderFloat("Blue Value", &blueValue, 0.0f, 1.0f);
+
 	ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color));
 	ImGui::ColorEdit3("ball color", reinterpret_cast<float*>(&ball_color));
 	m_ambientLight = vec3(ball_color.x, ball_color.y, ball_color.z);
@@ -222,15 +220,11 @@ bool LightingApp::update(float deltaTime)
 #pragma region Menu
 	if (ImGui::BeginMainMenuBar())
 	{
-		float tex_w = (float)ImGui::GetIO().Fonts->TexWidth;
-		float tex_h = (float)ImGui::GetIO().Fonts->TexHeight;
+		float tex_w = static_cast<float>(ImGui::GetIO().Fonts->TexWidth);
+		float tex_h = static_cast<float>(ImGui::GetIO().Fonts->TexHeight);
 		ImTextureID tex_id = ImGui::GetIO().Fonts->TexID;
 		if (ImGui::BeginMenu("File  -"))
 		{
-			//ImGui::MenuItem("test", NULL, false, false);
-			//if (ImGui::MenuItem("New")) {}
-			//for (int i = 0; i < 10; i++)
-			//	ImGui::Text("Scrolling Text %d", i);
 			if(ImGui::BeginMenu("Load Frag"))
 			{
 				if (ImGui::MenuItem("Hemi Frag"))
@@ -243,13 +237,18 @@ bool LightingApp::update(float deltaTime)
 					shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
 					shader->attach();
 				}
+				if (ImGui::MenuItem("Blinn Phong Frag"))
+				{
+					shader->load("blinnphong.frag", GL_FRAGMENT_SHADER, true);
+					shader->attach();
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::MenuItem("Restart")) { startup(); }
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Restart if you are deep");
 			if (ImGui::MenuItem("Quit", "Alt+F4")) { glfwSetWindowShouldClose(m_window, true); }
-			static int n = 2;
+			static auto n = 2;
 			ImGui::Combo("Are you amazing?", &n, "Yes\0No\0");
 			if (n == 1)
 				glfwSetWindowShouldClose(m_window, true);
