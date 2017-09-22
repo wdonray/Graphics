@@ -214,6 +214,16 @@ void LightingApp::onGUI()
 	if (ImGui::Checkbox("Fill", &fill))
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//if (ImGui::DragInt("Rows", &m_rows, 1, 0, 100) || ImGui::DragInt("Colm", &m_cols, 1, 0, 100))
+	//{
+	//	gridChanged = true;
+	//	if (gridChanged == true)
+	//	{
+	//		gridMesh = generateGrid(m_rows, m_cols);
+	//		gridMesh->Create_Buffers();
+	//	}
+	//}
+
 	ImGui::End();
 #pragma endregion
 
@@ -344,6 +354,11 @@ bool LightingApp::startup()
 	rings = 100;
 	generateSphere(segments, rings, m_VAO, m_VBO, m_IBO, index_count);
 
+	m_rows = 10;
+	m_cols = 10;
+	gridMesh = generateGrid(m_rows, m_cols);
+	gridMesh->Create_Buffers();
+
 	shader->load("phong.vert", GL_VERTEX_SHADER, true);
 	shader->load("phong.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
@@ -369,13 +384,18 @@ bool LightingApp::shutdown()
 bool LightingApp::update(float deltaTime)
 {
 	runTime += deltaTime;
+
 	if (ImGui::IsAnyItemActive() != true || ImGui::IsAnyItemHovered() != true)
 	{
 		camapp->Keyboard_Movement(cam, m_window);
 		camapp->Mouse_Movement(cam, m_window);
 	}
+
 	if (rotate == true)
 		m_directLight.direction = normalize(vec3(sinf(runTime / rotateSpeed), 0, cosf(runTime / rotateSpeed)));
+
+
+
 
 	onGUI();
 
@@ -385,7 +405,7 @@ bool LightingApp::update(float deltaTime)
 bool LightingApp::draw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	glEnable(GL_DEPTH_TEST);
 	if (fill)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	shader->bind();
@@ -395,7 +415,7 @@ bool LightingApp::draw()
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &pvm[0][0]);
 
 	int lightUniform = shader->getUniform("direction");
-	glUniform3fv(lightUniform, 1, value_ptr(-m_directLight.direction));
+	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.direction));
 
 	lightUniform = shader->getUniform("Id");
 	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.diffuse));
@@ -424,6 +444,12 @@ bool LightingApp::draw()
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
 
+
+	gridMesh->bind();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glUniformMatrix4fv(matUniform, 1, false, value_ptr(cam->getProjectionView() * translate(vec3(-4.5f, -2, -4.5f))));
+	gridMesh->draw(GL_TRIANGLES);
+	gridMesh->unbind();
 
 	shader->unbind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

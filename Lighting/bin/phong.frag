@@ -48,7 +48,7 @@ void main()
 
 	vec3 ambient = Ambient(Ka, Ia);
 
-	vec3 diffuse = Diffuse(Kd, Id, normalize(direction), N);
+	vec3 diffuse = Diffuse(Kd, Id, normalize(direction), -N);
 
 	vec3 specular = Specular(Ks, Is, normalize(direction), N, camPos, vPosition.xyz);
 
