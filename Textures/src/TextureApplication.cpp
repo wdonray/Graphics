@@ -26,25 +26,23 @@ TextureApplication::~TextureApplication()
 	delete shader;
 	delete plane;
 }
+
 Mesh* TextureApplication::generateGrid(unsigned int rows, unsigned int cols)
 {
+	vector<vec2> uvs;
 	auto aoVertices = new Vertex[rows * cols];
 	for (unsigned int r = 0; r < rows; ++r)
 	{
-		for (unsigned int c = 0; c < cols; ++c)
+		for (unsigned int c = 0; c < cols ; ++c)
 		{
+			uvs.push_back(vec2((float)r / (float)rows, (float)c / (float)cols));
 			Vertex verts = {
 				vec4(float(c), 0, float(r), 1),
-				vec4(sin(r),cos(c),0,1),
-				vec4(0,1,0,0),
+				vec4(sin(r), cos(c), 0, 1),
+				vec4(0, 1, 0, 0),
 				vec2((float)r / (float)rows, (float)c / (float)cols)
 			};
 			aoVertices[r * cols + c] = verts;
-			//aoVertices[r * cols + c].position = vec4((float)c, 0, (float)r, 1);
-			////Create some arbitrary color based off something
-			////that might not be related to tiling a tecture
-			//vec3 colour = vec3(sinf((c / (float)(cols - 1)) * (r / (float)(rows - 1))));
-			//aoVertices[r * cols + c].color = vec4(colour, 1);
 		}
 	}
 
@@ -94,7 +92,7 @@ bool TextureApplication::startup()
 	shader->load("textured.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
 
-	m_rows = 5, m_cols = 5;
+	m_rows = 5 , m_cols = 5;
 	plane = generateGrid(m_rows, m_cols);
 	plane->Create_Buffers();
 
@@ -103,6 +101,7 @@ bool TextureApplication::startup()
 	glGenTextures(1, &m_textureID);
 	glBindTexture(GL_TEXTURE_2D, m_textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	stbi_image_free(data);
@@ -132,12 +131,15 @@ bool TextureApplication::draw()
 	unsigned int projectionViewUniform = shader->getUniform("ProjectionViewModel");
 	unsigned int time = shader->getUniform("time");
 	unsigned int crate = shader->getUniform("textcrate");
+
 	shader->bind();
+
 	mat4 pvm = cam->getProjectionView();
 	glUniformMatrix4fv(projectionViewUniform, 1, GL_FALSE, &pvm[0][0]);
 	glUniform1f(time, glfwGetTime());
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_textureID);
+
 	//draw
 	plane->bind();
 	glUniform1i(crate, 0);
