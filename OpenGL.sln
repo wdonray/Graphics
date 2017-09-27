@@ -12,6 +12,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lighting", "Lighting\Lighting.vcxproj", "{D0520815-C0A2-4744-90B2-53016E2B1F56}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Textures", "Textures\Textures.vcxproj", "{394620B7-7CE6-4443-8BE8-53AB8A03571C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AF7BBDE-5E07-47C6-B0A6-0D147F061F98} = {2AF7BBDE-5E07-47C6-B0A6-0D147F061F98}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
