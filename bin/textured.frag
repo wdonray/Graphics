@@ -6,8 +6,9 @@ in vec2 vUV;
 in vec4 vTangent;
 
 out vec4 FragColor;
+uniform sampler2D textcrate;
 
 void main()
 {
-	FragColor = vColor;
+	FragColor = vColor * texture(textcrate, vUV);
 }
