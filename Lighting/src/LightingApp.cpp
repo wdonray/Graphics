@@ -394,9 +394,6 @@ bool LightingApp::update(float deltaTime)
 	if (rotate == true)
 		m_directLight.direction = normalize(vec3(sinf(runTime / rotateSpeed), 0, cosf(runTime / rotateSpeed)));
 
-
-
-
 	onGUI();
 
 	return false;
