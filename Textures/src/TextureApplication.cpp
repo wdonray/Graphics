@@ -10,7 +10,7 @@
 #include <stb/stb_image.h>
 
 
-TextureApplication::TextureApplication() : m_rows(0), m_cols(0), runTime(0), m_textureID(0)
+TextureApplication::TextureApplication() : m_rows(0), m_cols(0), imageWidth(0), imageHeight(0), imageFormat(0), data(nullptr), runTime(0), m_textureID(0), textureLoad(new char)
 {
 	cam = new Camera();
 	camapp = new CameraApp();
@@ -95,8 +95,8 @@ bool TextureApplication::startup()
 	plane = generateGrid(m_rows, m_cols);
 	plane->Create_Buffers();
 
-	int imageWidth, imageHeight, imageFormat;
-	unsigned char* data = stbi_load("./textures/crate.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	data = stbi_load("./textures/donray.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
 	glGenTextures(1, &m_textureID);
 	glBindTexture(GL_TEXTURE_2D, m_textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -105,6 +105,10 @@ bool TextureApplication::startup()
 
 	stbi_image_free(data);
 
+	ImGui_ImplGlfwGL3_Init(m_window, true);
+	auto& io = ImGui::GetIO();
+	io.DisplaySize.x = 1600;
+	io.DisplaySize.y = 900;
 	return false;
 }
 
@@ -115,11 +119,62 @@ bool TextureApplication::shutdown()
 	return false;
 }
 
+
+void TextureApplication::OnGUI()
+{
+	auto fps_window = true;
+	ImGui_ImplGlfwGL3_NewFrame();
+	ImGui::Begin("FPS", &fps_window);
+	ImGui::SetWindowPos(ImVec2(0, 130));
+	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
+	ImGui::End();
+
+	//ImGui::Begin("Load Image");
+	//ImGui::SetWindowPos(ImVec2(0, 190));
+	//ImGui::InputText("Texture", textureLoad, 50);
+	//ImGui::End();
+
+	//if (glfwGetKey(m_window, GLFW_KEY_SPACE))
+	//{
+	//	data = stbi_load(textureLoad, &imageWidth, &imageHeight, &imageFormat, STBI_default);
+	//	glGenTextures(1, &m_textureID);
+	//	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//	stbi_image_free(data);
+	//}
+
+}
 bool TextureApplication::update(float deltaTime)
 {
 	runTime += deltaTime;
 	camapp->Keyboard_Movement(cam, m_window);
 	camapp->Mouse_Movement(cam, m_window);
+	if (glfwGetKey(m_window, '9') == GLFW_PRESS)
+	{
+		data = stbi_load("./textures/dkbutt.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+		glGenTextures(1, &m_textureID);
+		glBindTexture(GL_TEXTURE_2D, m_textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	if (glfwGetKey(m_window, '0') == GLFW_PRESS)
+	{
+		data = stbi_load("./textures/donray.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+		glGenTextures(1, &m_textureID);
+		glBindTexture(GL_TEXTURE_2D, m_textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	OnGUI();
 	return false;
 }
 
@@ -133,7 +188,7 @@ bool TextureApplication::draw()
 
 	shader->bind();
 
-	mat4 pvm = cam->getProjectionView();
+	mat4 pvm = cam->getProjectionView()* translate(vec3(-4.5f, -2, -4.5f));
 	glUniformMatrix4fv(projectionViewUniform, 1, GL_FALSE, &pvm[0][0]);
 	glUniform1f(time, glfwGetTime());
 	glActiveTexture(GL_TEXTURE0);
@@ -146,5 +201,7 @@ bool TextureApplication::draw()
 	plane->unbind();
 
 	shader->unbind();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	ImGui::Render();
 	return false;
 }

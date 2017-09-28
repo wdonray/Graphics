@@ -6,10 +6,12 @@
 #include <Shader.h>
 #include <glm/ext.hpp>
 #include <Mesh.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 
 #define PI 3.14159265359
 static char fbuffer[5000];
-LightingApp::LightingApp() : runTime(0), m_rows(0), m_cols(0), segments(0), rings(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), m_modelMatrix(1)
+LightingApp::LightingApp() : runTime(0), m_rows(0), m_cols(0), segments(0), rings(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), imageWidth(0), imageHeight(0), imageFormat(0), m_textureID(0), data(nullptr), m_modelMatrix(1)
 {
 	cam = new Camera();
 	camapp = new CameraApp();
@@ -137,6 +139,16 @@ int LightingApp::TextEditCallback(ImGuiTextEditCallbackData* data)
 	return 1;
 }
 
+void LightingApp::loadTexture()
+{
+	glGenTextures(1, &m_textureID);
+	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
+}
 void LightingApp::onGUI()
 {
 	auto fps_window = true;
@@ -279,6 +291,66 @@ void LightingApp::onGUI()
 				ImGuiInputTextFlags_CallbackAlways, TextEditCallBackStub, static_cast<void*>(&sd));
 			ImGui::EndMenu();
 		}
+		ImGui::SetNextWindowSize(ImVec2(200, 200));
+		if (ImGui::BeginMenu("Image to Load"))
+		{
+			if (ImGui::MenuItem("Blue"))
+			{
+				data = stbi_load("./textures/blue.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Earth"))
+			{
+				data = stbi_load("./textures/test.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Another Earth"))
+			{
+				data = stbi_load("./textures/world.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Brick"))
+			{
+				data = stbi_load("./textures/brick.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Wood"))
+			{
+				data = stbi_load("./textures/woodd.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Class"))
+			{
+				data = stbi_load("./textures/class.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Room"))
+			{
+				data = stbi_load("./textures/room.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Mountain"))
+			{
+				data = stbi_load("./textures/mountain.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("River"))
+			{
+				data = stbi_load("./textures/river.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Sunset at Pier"))
+			{
+				data = stbi_load("./textures/sunset.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			if (ImGui::MenuItem("Game"))
+			{
+				data = stbi_load("./textures/game.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				loadTexture();
+			}
+			ImGui::EndMenu();
+		}
 	}
 	ImGui::EndMainMenuBar();
 #pragma endregion
@@ -341,9 +413,9 @@ bool LightingApp::startup()
 	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
 
-	m_directLight.diffuse = vec3(0, 1, 0);
+	m_directLight.diffuse = vec3(0, 0, 0);
 	m_directLight.specular = vec3(1);
-	m_ambientLight = vec3(0, 0, 0);
+	m_ambientLight = vec3(ball_color.x = 1, ball_color.y = 1, ball_color.z = 1);
 
 	m_material.diffuse = vec3(1);
 	m_material.ambient = vec3(1);
@@ -366,6 +438,9 @@ bool LightingApp::startup()
 	memmove(fbuffer, shader->fsSource, 5000);
 
 	m_modelMatrix = scale(vec3(5));
+
+	data = stbi_load("./textures/test.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+	loadTexture();
 
 	ImGui_ImplGlfwGL3_Init(m_window, true);
 	auto& io = ImGui::GetIO();
@@ -401,6 +476,10 @@ bool LightingApp::update(float deltaTime)
 
 bool LightingApp::draw()
 {
+	int matUniform = shader->getUniform("ProjectionViewModel");
+	int lightUniform = shader->getUniform("direction");
+	unsigned int crate = shader->getUniform("image");
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	if (fill)
@@ -408,10 +487,12 @@ bool LightingApp::draw()
 	shader->bind();
 	mat4 pvm = cam->getProjectionView() * m_modelMatrix;
 
-	int matUniform = shader->getUniform("ProjectionViewModel");
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	glUniform1i(crate, 0);
+
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &pvm[0][0]);
 
-	int lightUniform = shader->getUniform("direction");
 	glUniform3fv(lightUniform, 1, value_ptr(m_directLight.direction));
 
 	lightUniform = shader->getUniform("Id");

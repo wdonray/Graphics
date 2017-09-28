@@ -19,8 +19,14 @@ public:
 	Mesh * plane;
 	int m_rows;
 	int m_cols;
+	int imageWidth, imageHeight, imageFormat;
+	unsigned char* data;
+	bool switchTest = false;
 	float runTime;
 	unsigned m_textureID;
+	char * textureLoad;
+private:
+	void OnGUI();
 protected:
 	bool startup() override;
 	bool shutdown() override;

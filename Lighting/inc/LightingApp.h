@@ -34,6 +34,10 @@ public:
 	unsigned int m_VBO;
 	unsigned int m_IBO;
 	unsigned int index_count;
+	int imageWidth, imageHeight, imageFormat;
+	unsigned m_textureID;
+	unsigned char* data;
+	void loadTexture();
 	ImVec4 ball_color = ImColor(0,0,0);
 	ImVec4 clear_color = ImColor(114, 144, 154);
 private:
