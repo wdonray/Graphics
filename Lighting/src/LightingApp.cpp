@@ -159,93 +159,13 @@ void LightingApp::onGUI()
 	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
 	ImGui::End();
 #pragma endregion
-
-#pragma region Color
-	ImGui::Begin("Color");
-	ImGui::SetWindowPos(ImVec2(0, 180));
-	ImGui::ColorEdit3("Clear color", reinterpret_cast<float*>(&clear_color));
-	ImGui::ColorEdit3("Light color", reinterpret_cast<float*>(&ball_color));
-	m_ambientLight = vec3(ball_color.x, ball_color.y, ball_color.z);
-	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-	ImGui::End();
-#pragma endregion
-
-#pragma region Rotate
-
-	ImGui::Begin("Light Position");
-	ImGui::SetWindowPos(ImVec2(0, 265));
-	ImGui::BeginGroup();
-	if (ImGui::Button("Rotate Light"))
-	{
-		rotate = true;
-		rotateSpeed -= .1;
-		m_directLight.direction = normalize(vec3(sinf(runTime / rotateSpeed), 0, cosf(runTime / rotateSpeed)));
-	}
-	ImGui::SameLine();
-	ImGui::Text("Runtime / Speed value (%f)", rotateSpeed);
-	if (ImGui::Button("Pause Rotation"))
-	{
-		rotate = false;
-		m_directLight.direction = normalize(vec3(0, 1, 0));
-	}
-	//ImGui::BeginGroup();
-	//if (ImGui::Button("Light at Bottom"))
-	//{ 
-	//	rotate = false;
-	//	m_directLight.direction = normalize(vec3(0, 10, 0));
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::Button("Light at Right"))
-	//{
-	//	rotate = false;
-	//	m_directLight.direction = normalize(vec3(0, 0, 10));
-	//}
-	//ImGui::BeginGroup();
-	//ImGui::EndGroup();
-	//if (ImGui::Button("Light at Left"))
-	//{
-	//	rotate = false;
-	//	m_directLight.direction = normalize(vec3(10, 0, 0));
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::Button("Light at Top"))
-	//{
-	//	rotate = false;
-	//	m_directLight.direction = normalize(vec3(0, -10, 0));
-	//}
-	ImGui::DragFloat3("Light Direction", &m_directLight.direction[0], 0.01f, -1, 1);
-	ImGui::DragFloat("Specular Power", &m_material.specularPower, 1, 0, 99999);
-	ImGui::EndGroup();
-	ImGui::End();
-	//ImGui::ShowTestWindow();
-#pragma endregion 
-
-#pragma region Fill/ Line
-	ImGui::Begin("Fill / Line");
-	ImGui::SetWindowPos(ImVec2(0, 390));
-	if (ImGui::Checkbox("Fill", &fill))
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//if (ImGui::DragInt("Rows", &m_rows, 1, 0, 100) || ImGui::DragInt("Colm", &m_cols, 1, 0, 100))
-	//{
-	//	gridChanged = true;
-	//	if (gridChanged == true)
-	//	{
-	//		gridMesh = generateGrid(m_rows, m_cols);
-	//		gridMesh->Create_Buffers();
-	//	}
-	//}
-
-	ImGui::End();
-#pragma endregion
-
 #pragma region Menu
 	if (ImGui::BeginMainMenuBar())
 	{
 		float tex_w = static_cast<float>(ImGui::GetIO().Fonts->TexWidth);
 		float tex_h = static_cast<float>(ImGui::GetIO().Fonts->TexHeight);
 		ImTextureID tex_id = ImGui::GetIO().Fonts->TexID;
-		if (ImGui::BeginMenu("File"))
+		if (ImGui::BeginMenu(" File  "))
 		{
 			if (ImGui::BeginMenu("Load Frag"))
 			{
@@ -267,10 +187,6 @@ void LightingApp::onGUI()
 				ImGui::EndMenu();
 			}
 
-			//if (ImGui::MenuItem("Restart")) { startup(); }
-			//if (ImGui::IsItemHovered())
-			//	ImGui::SetTooltip("Restart if you are deep");
-
 			if (ImGui::MenuItem("Quit", "Alt+F4")) { glfwSetWindowShouldClose(m_window, true); }
 			static auto n = 2;
 			ImGui::Combo("Are you amazing?", &n, "Yes\0No\0");
@@ -283,16 +199,52 @@ void LightingApp::onGUI()
 			}
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu(" Polygon Mode  "))
+		{
+			if (ImGui::Checkbox("Fill", &fill))
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu(" Light Position / Rotation  "))
+		{
+			ImGui::BeginGroup();
+			if (ImGui::Button(" Rotate Light  "))
+			{
+				rotate = true;
+				rotateSpeed -= .1;
+				m_directLight.direction = normalize(vec3(sinf(runTime / rotateSpeed), 0, cosf(runTime / rotateSpeed)));
+			}
+			ImGui::SameLine();
+			ImGui::Text("Runtime / Speed value (%f)", rotateSpeed);
+			if (ImGui::Button("Pause Rotation"))
+			{
+				rotate = false;
+				m_directLight.direction = normalize(vec3(0, 1, 0));
+			}
+			ImGui::DragFloat3("Light Direction", &m_directLight.direction[0], 0.01f, -1, 1);
+			ImGui::DragFloat("Specular Power", &m_material.specularPower, 1, 0, 99999);
+			ImGui::EndGroup();
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu(" Change Colors  "))
+		{
+			ImGui::ColorEdit3("Clear color", reinterpret_cast<float*>(&clear_color));
+			ImGui::ColorEdit3("Light color", reinterpret_cast<float*>(&ball_color));
+			m_ambientLight = vec3(ball_color.x, ball_color.y, ball_color.z);
+			setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+			ImGui::EndMenu();
+		}
 		ImGui::SetNextWindowSize(ImVec2(500, 500));
-		if (ImGui::BeginMenu("Phong Frag"))
+		if (ImGui::BeginMenu(" Phong Frag  "))
 		{
 			auto sd = ShaderData{ shader, fbuffer, GL_FRAGMENT_SHADER, false };
 			ImGui::InputTextMultiline("Frag Shader", fbuffer, sizeof fbuffer, ImGui::GetWindowSize(),
 				ImGuiInputTextFlags_CallbackAlways, TextEditCallBackStub, static_cast<void*>(&sd));
 			ImGui::EndMenu();
 		}
-		ImGui::SetNextWindowSize(ImVec2(200, 200));
-		if (ImGui::BeginMenu("Image to Load"))
+		ImGui::SetNextWindowSize(ImVec2(200, 145));
+		if (ImGui::BeginMenu(" Image to Load  "))
 		{
 			if (ImGui::MenuItem("Blue"))
 			{
@@ -314,24 +266,9 @@ void LightingApp::onGUI()
 				data = stbi_load("./textures/brick.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
 				loadTexture();
 			}
-			if (ImGui::MenuItem("Wood"))
-			{
-				data = stbi_load("./textures/woodd.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-				loadTexture();
-			}
-			if (ImGui::MenuItem("Class"))
-			{
-				data = stbi_load("./textures/class.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-				loadTexture();
-			}
 			if (ImGui::MenuItem("Room"))
 			{
 				data = stbi_load("./textures/room.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-				loadTexture();
-			}
-			if (ImGui::MenuItem("Mountain"))
-			{
-				data = stbi_load("./textures/mountain.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("River"))
@@ -521,7 +458,6 @@ bool LightingApp::draw()
 
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
-
 
 	gridMesh->bind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

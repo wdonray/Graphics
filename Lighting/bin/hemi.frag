@@ -18,6 +18,7 @@ in vec4 vTangent;
 
 out vec4 FragColor;
 uniform vec3 camPos; // world space camera pos
+uniform sampler2D image;
 
 vec4 hemi(vec4 skyc, vec4 groundc, vec4 normal)
 {
@@ -31,6 +32,6 @@ void main()
 {
 
 	vec4 sky = vec4(0, 0.25f, 1, 1);
-	vec4 ground = vec4(0, .5f, 0, 1);
-	FragColor = hemi(sky, ground, normalize(vNormal));
+	vec4 ground = vec4(1);
+	FragColor = hemi(sky, ground, normalize(vNormal)) * texture(image, vUV);
 }
