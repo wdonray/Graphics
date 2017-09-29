@@ -11,12 +11,28 @@
 
 #define PI 3.14159265359
 static char fbuffer[5000];
-LightingApp::LightingApp() : runTime(0), m_rows(0), m_cols(0), segments(0), rings(0), m_VAO(0), m_VBO(0), m_IBO(0), index_count(0), imageWidth(0), imageHeight(0), imageFormat(0), m_textureID(0), data(nullptr), m_modelMatrix(1)
+
+LightingApp::LightingApp() : runTime(0), m_rows(0), m_cols(0), data(nullptr), m_modelMatrix(1)
 {
 	cam = new Camera();
 	camapp = new CameraApp();
 	shader = new Shader();
 	gridMesh = new Mesh();
+
+	m_directLight.diffuse = vec3(0, 0, 0);
+	m_directLight.specular = vec3(1);
+	m_ambientLight = vec3(ball_color.x = 1, ball_color.y = 1, ball_color.z = 1);
+
+	m_material.diffuse = vec3(1);
+	m_material.ambient = vec3(1);
+	m_material.specular = vec3(1);
+
+	m_material.specularPower = 30;
+	m_Sphere.segments = 100;
+	m_Sphere.rings = 100;
+
+	m_rows = 10, m_cols = 10;
+
 }
 
 LightingApp::~LightingApp()
@@ -141,14 +157,15 @@ int LightingApp::TextEditCallback(ImGuiTextEditCallbackData* data)
 
 void LightingApp::loadTexture()
 {
-	glGenTextures(1, &m_textureID);
-	glBindTexture(GL_TEXTURE_2D, m_textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenTextures(1, &m_image.m_textureID);
+	glBindTexture(GL_TEXTURE_2D, m_image.m_textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_image.imageWidth, m_image.imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	stbi_image_free(data);
 }
+
 void LightingApp::onGUI()
 {
 	auto fps_window = true;
@@ -159,6 +176,13 @@ void LightingApp::onGUI()
 	ImGui::Text("Application FPS (%.1f FPS)", ImGui::GetIO().Framerate);
 	ImGui::End();
 #pragma endregion
+	ImGui::Begin("Light Direction");
+	ImGui::SetWindowPos(ImVec2(0, 230));
+	ImGui::ProgressBar(m_directLight.direction[0], ImVec2(-1.0f, 0.0f));
+	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+	ImGui::Text("Progress Bar");
+	ImGui::ProgressBar(-m_directLight.direction[0], ImVec2(-1.0f, 0.0f));
+	ImGui::End();
 #pragma region Menu
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -248,50 +272,67 @@ void LightingApp::onGUI()
 		{
 			if (ImGui::MenuItem("Blue"))
 			{
-				data = stbi_load("./textures/blue.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/blue.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("Earth"))
 			{
-				data = stbi_load("./textures/test.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/test.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("Another Earth"))
 			{
-				data = stbi_load("./textures/world.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/world.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("Brick"))
 			{
-				data = stbi_load("./textures/brick.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/brick.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("Room"))
 			{
-				data = stbi_load("./textures/room.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/room.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("River"))
 			{
-				data = stbi_load("./textures/river.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/river.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("Sunset at Pier"))
 			{
-				data = stbi_load("./textures/sunset.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/sunset.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
 			if (ImGui::MenuItem("Game"))
 			{
-				data = stbi_load("./textures/game.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+				data = stbi_load("./textures/game.png", &m_image.imageWidth, &m_image.imageHeight,
+					&m_image.imageFormat, STBI_default);
 				loadTexture();
 			}
+			ImGui::EndMenu();
+		}
+		ImGui::SetNextWindowSize(ImVec2(340, 100));
+		if (ImGui::BeginMenu(" Sphere Options  "))
+		{
+			ImGui::DragInt("Scale Amount", &m_Sphere.scaleAmt, 1, 1, 50);
+			ImGui::DragFloat3("Sphere Position", reinterpret_cast<float*>(&m_Sphere.spherePos),0.5f);
+			m_modelMatrix = scale(vec3(m_Sphere.scaleAmt)) * translate(vec3(m_Sphere.spherePos.x, m_Sphere.spherePos.y, m_Sphere.spherePos.z));
 			ImGui::EndMenu();
 		}
 	}
 	ImGui::EndMainMenuBar();
 #pragma endregion
 }
+
 Mesh* LightingApp::generateGrid(unsigned int rows, unsigned int cols)
 {
 	auto aoVertices = new Vertex[rows * cols];
@@ -350,21 +391,9 @@ bool LightingApp::startup()
 	setBackgroundColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
 
-	m_directLight.diffuse = vec3(0, 0, 0);
-	m_directLight.specular = vec3(1);
-	m_ambientLight = vec3(ball_color.x = 1, ball_color.y = 1, ball_color.z = 1);
+	generateSphere(m_Sphere.segments, m_Sphere.rings, m_Sphere.m_VAO,
+		m_Sphere.m_VBO, m_Sphere.m_IBO, m_Sphere.index_count);
 
-	m_material.diffuse = vec3(1);
-	m_material.ambient = vec3(1);
-	m_material.specular = vec3(1);
-
-	m_material.specularPower = 30;
-	segments = 100;
-	rings = 100;
-	generateSphere(segments, rings, m_VAO, m_VBO, m_IBO, index_count);
-
-	m_rows = 10;
-	m_cols = 10;
 	gridMesh = generateGrid(m_rows, m_cols);
 	gridMesh->Create_Buffers();
 
@@ -375,8 +404,9 @@ bool LightingApp::startup()
 	memmove(fbuffer, shader->fsSource, 5000);
 
 	m_modelMatrix = scale(vec3(5));
+	m_Sphere.scaleAmt = 5;
 
-	data = stbi_load("./textures/test.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+	data = stbi_load("./textures/test.png", &m_image.imageWidth, &m_image.imageHeight, &m_image.imageFormat, STBI_default);
 	loadTexture();
 
 	ImGui_ImplGlfwGL3_Init(m_window, true);
@@ -415,7 +445,8 @@ bool LightingApp::draw()
 {
 	int matUniform = shader->getUniform("ProjectionViewModel");
 	int lightUniform = shader->getUniform("direction");
-	unsigned int crate = shader->getUniform("image");
+	unsigned int sphereImage = shader->getUniform("image");
+	unsigned int time = shader->getUniform("time");
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -423,10 +454,10 @@ bool LightingApp::draw()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	shader->bind();
 	mat4 pvm = cam->getProjectionView() * m_modelMatrix;
-
+	glUniform1f(time, glfwGetTime());
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_textureID);
-	glUniform1i(crate, 0);
+	glBindTexture(GL_TEXTURE_2D, m_image.m_textureID);
+	glUniform1i(sphereImage, 0);
 
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &pvm[0][0]);
 
@@ -456,8 +487,8 @@ bool LightingApp::draw()
 	lightUniform = shader->getUniform("camPos");
 	glUniform3fv(lightUniform, 1, value_ptr(cam->m_posvec3));
 
-	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(m_Sphere.m_VAO);
+	glDrawElements(GL_TRIANGLES, m_Sphere.index_count, GL_UNSIGNED_INT, nullptr);
 
 	gridMesh->bind();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

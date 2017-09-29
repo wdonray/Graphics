@@ -19,6 +19,7 @@ in vec4 vTangent;
 out vec4 FragColor;
 uniform vec3 camPos; // world space camera pos
 uniform sampler2D image;
+uniform float time;
 
 
 vec3 Ambient(vec3 Ka, vec3 Ia)
@@ -54,6 +55,7 @@ void main()
 	vec3 diffuse = Diffuse(Kd, Id, -normalize(direction), N);
 
 	vec3 specular = Specular(Ks, Is, -normalize(direction), N, camPos, vPosition.xyz);
-
-	FragColor = vec4(ambient + diffuse + specular, 1)* texture(image, vUV);
+	vec2 duv = vUV;
+	duv.x +=time / 20;
+	FragColor = vec4(ambient + diffuse + specular, 1)* texture(image, duv);
 }

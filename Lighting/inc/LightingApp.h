@@ -22,26 +22,35 @@ public:
 	CameraApp * camapp;
 	Shader * shader;
 	Mesh * gridMesh;
-	float runTime;
-	float rotateSpeed = 2.f;
-	bool rotate = true;
-	bool fill = true;
-	bool gridChanged = false;
-	int m_rows;
-	int m_cols;
-	unsigned segments, rings;
-	unsigned int m_VAO;
-	unsigned int m_VBO;
-	unsigned int m_IBO;
-	unsigned int index_count;
-	int imageWidth, imageHeight, imageFormat;
-	unsigned m_textureID;
+	float runTime, rotateSpeed = 2.f;
+	bool rotate = true, fill = true;
+	int m_rows, m_cols;
 	unsigned char* data;
 	void loadTexture();
-	ImVec4 ball_color = ImColor(0,0,0);
-	ImVec4 clear_color = ImColor(114, 144, 154);
+	ImVec4 ball_color = ImColor(0, 0, 0), clear_color = ImColor(114, 144, 154);
 private:
 	void onGUI();
+
+	struct toGenSphere
+	{
+		unsigned segments;
+		unsigned rings;
+		unsigned int index_count;
+		unsigned int m_VAO;
+		unsigned int m_VBO;
+		unsigned int m_IBO;
+		int scaleAmt;
+		ImVec4 spherePos;
+	} m_Sphere;
+
+	struct ImageInformation
+	{
+		int imageWidth;
+		int imageHeight;
+		int imageFormat;
+		unsigned m_textureID;
+	} m_image;
+
 	struct DirectionalLight
 	{
 		glm::vec3 direction;
@@ -58,6 +67,7 @@ private:
 		glm::vec3 specular;
 		float specularPower;
 	} m_material;
+
 	glm::mat4 m_modelMatrix;
 
 	struct ShaderData
@@ -66,7 +76,6 @@ private:
 		char* source;
 		unsigned type;
 		bool isFile;
-
 	};
 protected:
 	bool startup() override;
