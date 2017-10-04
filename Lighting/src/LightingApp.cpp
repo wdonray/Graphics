@@ -418,8 +418,13 @@ bool LightingApp::startup()
 
 bool LightingApp::shutdown()
 {
+	TCHAR szExeFileName[MAX_PATH];
+	GetModuleFileName(nullptr, szExeFileName, MAX_PATH);
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) || m_GameOver)
+	{
 		glfwSetWindowShouldClose(m_window, true);
+		printf("Now Exiting: %s", szExeFileName );
+	}
 	return false;
 }
 

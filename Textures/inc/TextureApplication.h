@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw_gl3.h"
+#include <gl_core_4_4.h>
 struct Camera;
 struct CameraApp;
 struct Shader;
@@ -25,8 +26,10 @@ public:
 	float runTime;
 	unsigned m_textureID;
 	char * textureLoad;
+	unsigned m_perlinTexture;
+	void PerlinTest();
 private:
-	void OnGUI();
+	void OnGUI() const;
 protected:
 	bool startup() override;
 	bool shutdown() override;

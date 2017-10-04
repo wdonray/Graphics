@@ -85,23 +85,23 @@ Mesh* TextureApplication::generateGrid(unsigned int rows, unsigned int cols)
 bool TextureApplication::startup()
 {
 	setBackgroundColor(1.0f, 1.0f, 1.0f, 1);
-	cam->setLookAt(cam->m_posvec3, vec3(0), vec3(0, 1, 0));
+	cam->setLookAt(vec3(100, 100, 100), vec3(0), vec3(0, 1, 0));
 
-	shader->load("textured.vert", GL_VERTEX_SHADER, true);
-	shader->load("textured.frag", GL_FRAGMENT_SHADER, true);
+	shader->load("perlin.vert", GL_VERTEX_SHADER, true);
+	shader->load("perlin.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
 
-	m_rows = 5, m_cols = 5;
+	m_rows = 64, m_cols = 64;
 	plane = generateGrid(m_rows, m_cols);
 	plane->Create_Buffers();
 
-
-	data = stbi_load("./textures/donray.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-	glGenTextures(1, &m_textureID);
-	glBindTexture(GL_TEXTURE_2D, m_textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	PerlinTest();
+	////data = stbi_load("./textures/donray.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+	//glGenTextures(1, &m_textureID);
+	//glBindTexture(GL_TEXTURE_2D, m_textureID);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	stbi_image_free(data);
 
@@ -120,7 +120,37 @@ bool TextureApplication::shutdown()
 }
 
 
-void TextureApplication::OnGUI()
+void TextureApplication::PerlinTest()
+{
+	float* perlinData = new float[m_rows * m_cols];
+	float scale = (1.0f / m_rows) * 3;
+	int octaves = 6;
+	for (int x = 0; x < m_rows; ++x)
+	{
+		for (int y = 0; y < m_cols; ++y)
+		{
+			float amplitude = 1.f;
+			float persistence = 0.3f;
+			perlinData[y * m_rows + x] = 0;
+			for (int o = 0; o < octaves; ++o)
+			{
+				float freq = powf(2, (float)o);
+				float perlinSample = perlin(vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
+				perlinData[y * m_rows + x] += perlinSample * amplitude;
+				amplitude *= persistence;
+			}
+		}
+	}
+	glGenTextures(1, &m_perlinTexture);
+	glBindTexture(GL_TEXTURE_2D, m_perlinTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, m_rows, m_cols, 0, GL_RED, GL_FLOAT, perlinData);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+void TextureApplication::OnGUI() const
 {
 	auto fps_window = true;
 	ImGui_ImplGlfwGL3_NewFrame();
@@ -145,35 +175,35 @@ void TextureApplication::OnGUI()
 
 	//	stbi_image_free(data);
 	//}
-
 }
+
 bool TextureApplication::update(float deltaTime)
 {
 	runTime += deltaTime;
 	camapp->Keyboard_Movement(cam, m_window);
 	camapp->Mouse_Movement(cam, m_window);
-	if (glfwGetKey(m_window, '9') == GLFW_PRESS)
-	{
-		data = stbi_load("./textures/dkbutt.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-		glGenTextures(1, &m_textureID);
-		glBindTexture(GL_TEXTURE_2D, m_textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//if (glfwGetKey(m_window, '9') == GLFW_PRESS)
+	//{
+	//	data = stbi_load("./textures/dkbutt.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+	//	glGenTextures(1, &m_textureID);
+	//	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		stbi_image_free(data);
-	}
-	if (glfwGetKey(m_window, '0') == GLFW_PRESS)
-	{
-		data = stbi_load("./textures/donray.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-		glGenTextures(1, &m_textureID);
-		glBindTexture(GL_TEXTURE_2D, m_textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//	stbi_image_free(data);
+	//}
+	//if (glfwGetKey(m_window, '0') == GLFW_PRESS)
+	//{
+	//	data = stbi_load("./textures/donray.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+	//	glGenTextures(1, &m_textureID);
+	//	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		stbi_image_free(data);
-	}
+	//	stbi_image_free(data);
+	//}
 	OnGUI();
 	return false;
 }
@@ -185,18 +215,19 @@ bool TextureApplication::draw()
 	unsigned int projectionViewUniform = shader->getUniform("ProjectionViewModel");
 	unsigned int time = shader->getUniform("time");
 	unsigned int crate = shader->getUniform("textcrate");
+	unsigned int perlin = shader->getUniform("perlinTexture");
 
 	shader->bind();
 
-	mat4 pvm = cam->getProjectionView()* translate(vec3(-4.5f, -2, -4.5f));
+	mat4 pvm = cam->getProjectionView();
 	glUniformMatrix4fv(projectionViewUniform, 1, GL_FALSE, &pvm[0][0]);
 	glUniform1f(time, glfwGetTime());
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, m_textureID);
 
 	//draw
 	plane->bind();
-	glUniform1i(crate, 0);
+	glUniform1i(perlin, 0);
 	plane->draw(GL_TRIANGLES);
 	plane->unbind();
 
