@@ -8,9 +8,25 @@
 #include <Mesh.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include <time.h>
 
+#define maxPrimeIndex 10
+int primeIndex = 0;
 
-TextureApplication::TextureApplication() : m_rows(0), m_cols(0), imageWidth(0), imageHeight(0), imageFormat(0), data(nullptr), runTime(0), m_textureID(0), textureLoad(new char)
+int primes[maxPrimeIndex][3] = {
+	{995615039, 600173719, 701464987},
+	{831731269, 162318869, 136250887},
+	{174329291, 946737083, 245679977},
+	{362489573, 795918041, 350777237},
+	{457025711, 880830799, 909678923},
+	{787070341, 177340217, 593320781},
+	{405493717, 291031019, 391950901},
+	{458904767, 676625681, 424452397},
+	{531736441, 939683957, 810651871},
+	{997169939, 842027887, 423882827}
+};
+
+TextureApplication::TextureApplication() : m_rows(0), m_cols(0), imageWidth(0), imageHeight(0), imageFormat(0), data(nullptr), runTime(0), m_textureID(0), textureLoad(new char), m_perlinTexture(0)
 {
 	cam = new Camera();
 	camapp = new CameraApp();
@@ -39,7 +55,7 @@ Mesh* TextureApplication::generateGrid(unsigned int rows, unsigned int cols)
 				vec4(sin(r), cos(c), 0, 1),
 				vec4(0, 1, 0, 0),
 				vec2(float(c) / float(cols - 1),
-					 float(r) / float(rows - 1))
+				     float(r) / float(rows - 1))
 			};
 			aoVertices[r * cols + c] = verts;
 		}
@@ -84,14 +100,15 @@ Mesh* TextureApplication::generateGrid(unsigned int rows, unsigned int cols)
 
 bool TextureApplication::startup()
 {
-	setBackgroundColor(1.0f, 1.0f, 1.0f, 1);
+	srand(time(nullptr));
+	setBackgroundColor(0, 0, 1.0f, 1);
 	cam->setLookAt(vec3(100, 100, 100), vec3(0), vec3(0, 1, 0));
 
 	shader->load("perlin.vert", GL_VERTEX_SHADER, true);
 	shader->load("perlin.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
 
-	m_rows = 64, m_cols = 64;
+	m_rows = 64 , m_cols = 64;
 	plane = generateGrid(m_rows, m_cols);
 	plane->Create_Buffers();
 
@@ -129,13 +146,14 @@ void TextureApplication::PerlinTest()
 	{
 		for (int y = 0; y < m_cols; ++y)
 		{
-			float amplitude = 1.f;
-			float persistence = 0.3f;
+			float amplitude = 1.f, persistence = 0.3f;
 			perlinData[y * m_rows + x] = 0;
 			for (int o = 0; o < octaves; ++o)
 			{
-				float freq = powf(2, (float)o);
-				float perlinSample = perlin(vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
+				float freq = powf(2, float(o));
+				//float perlinSample = DonrayNoise(vec2(float(x), float(y)) * scale * freq , 0)  * 0.5f + 0.5f;
+				//float perlinSample = perlin(vec2(float(x), float(y)) * scale * freq)  * 0.5f + 0.5f;
+				float perlinSample = InterpolatedNoise(vec3(float(x), float(y), 1) * scale * freq, 350) * 0.5f + 0.5f;
 				perlinData[y * m_rows + x] += perlinSample * amplitude;
 				amplitude *= persistence;
 			}
@@ -148,6 +166,38 @@ void TextureApplication::PerlinTest()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+double TextureApplication::DonrayNoise(vec2 pos, int i)
+{
+	//Get random prime number
+	auto a = primes[i][rand() % 10], b = primes[i][rand() % 10], c = primes[i][rand() % 10];
+	// From Canvas Slides
+	int n = pos.x + pos.y * 57;
+	n = (n << 13) ^ n;
+	auto nn = (n * (n * n * a + b) + c) & 0x7fffffff;
+	return 1.0 - (double(nn) / 1073741824.0);
+}
+
+double TextureApplication::Interpolate(vec3 pos)
+{
+	double ft = pos.z * glm::length(pos);
+	double f = (2.0 - cos(ft)) * 0.5f;
+	return pos.x * (1.0 - f) + pos.y * f;
+}
+
+double TextureApplication::InterpolatedNoise(vec2 pos, int value)
+{
+	//Get the surrounding pixels to calculate the transition.
+	double v1 = DonrayNoise(vec3(pos.x, pos.y, 0), 0),
+		v2 = DonrayNoise(vec3(pos.x + value, pos.y, 0), 0),
+		v3 = DonrayNoise(vec3(pos.x, pos.y + value, 0), 0),
+		v4 = DonrayNoise(vec3(pos.x + value, pos.y + value, 0), 0);
+	//Interpolate between the values.
+	double int1 = Interpolate(vec3(v1, v2, pos.x - pos.y)),
+		int2 = Interpolate(vec3(v3, v4, pos.x - pos.y));
+
+	return Interpolate(vec3(int1, int2, 0));
 }
 
 void TextureApplication::OnGUI() const
