@@ -153,7 +153,7 @@ void TextureApplication::PerlinTest()
 				float freq = powf(2, float(o));
 				//float perlinSample = DonrayNoise(vec2(float(x), float(y)) * scale * freq , 0)  * 0.5f + 0.5f;
 				//float perlinSample = perlin(vec2(float(x), float(y)) * scale * freq)  * 0.5f + 0.5f;
-				float perlinSample = InterpolatedNoise(vec3(float(x), float(y), 1) * scale * freq, 1).x * 0.5f + 0.5f;
+				float perlinSample = InterpolatedNoise(vec2(float(x), float(y)) * scale * freq, 1).x * 0.5f + 0.5f;
 				perlinData[y * m_rows + x] += perlinSample * amplitude;
 				amplitude *= persistence;
 			}
@@ -168,12 +168,13 @@ void TextureApplication::PerlinTest()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-double TextureApplication::DonrayNoise(vec2 pos, int i)
+double TextureApplication::DonrayNoise(vec2 pos)
 {
 	//Get random prime number.
-	auto a = primes[i][rand() % 10], b = primes[i][rand() % 10], c = primes[i][rand() % 10];
+	int i = rand() % 10;
+	auto a = primes[i][rand() % 3], b = primes[i][rand() % 3], c = primes[i][rand() % 3];
 	// From Canvas Slides
-	int n = pos.x + pos.y * 57;
+	int n = (pos.x + pos.y) * 57;
 	n = (n << 13) ^ n;
 	auto nn = (n * (n * n * a + b) + c) & 0x7fffffff;
 	return 1.0 - (double(nn) / 1073741824.0);
@@ -185,10 +186,10 @@ vec2 TextureApplication::InterpolatedNoise(vec2 pos, int value)
 	//This is a bit of a wing
 	double floorX = floor(pos.x), floorY = floor(pos.y);
 	//Get the surrounding pixels to calculate the transition.
-	float v1 = DonrayNoise(vec3(floorX, floorY, 0), 0),
-		v2 = DonrayNoise(vec3(floorX + value, floorY, 0), 0),
-		v3 = DonrayNoise(vec3(floorX, floorY + value, 0), 0),
-		v4 = DonrayNoise(vec3(floorX + value, floorY + value, 0), 0);
+	float v1 = DonrayNoise(vec2(floorX, floorY)),
+		v2 = DonrayNoise(vec2(floorX + value, floorY)),
+		v3 = DonrayNoise(vec2(floorX, floorY + value)),
+		v4 = DonrayNoise(vec2(floorX + value, floorY + value));
 	//Smooth it out
 	return lerp(vec3(v1, v2, pos.x - floorX),
 	            vec3(v3, v4, pos.x - floorX),
