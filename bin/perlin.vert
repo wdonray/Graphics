@@ -20,6 +20,6 @@ void main()
 	vUV = UV;
 	vTangent = Tangent;
 	vec4 pos = vPosition; 
-	pos.y += texture(perlinTexture, vUV).r * 5;
+	pos.y += texture(perlinTexture, vUV).r * 2;
 	gl_Position = ProjectionViewModel * pos;
 }
