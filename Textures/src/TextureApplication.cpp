@@ -136,7 +136,23 @@ bool TextureApplication::shutdown()
 	return false;
 }
 
+auto TextureApplication::InterpolatedNoise(vec2 pos, int value)
+{
+	//The value of x and y rounded downwards
+	//This is a bit of a wing
+	double floorX = floor(pos.x), floorY = floor(pos.y);
 
+	//Get the surrounding pixels to calculate the transition.
+	float v1 = DonrayNoise(vec2(floorX, floorY)),
+		v2 = DonrayNoise(vec2(floorX + value, floorY)),
+		v3 = DonrayNoise(vec2(floorX, floorY + value)),
+		v4 = DonrayNoise(vec2(floorX + value, floorY + value));
+
+	//Smooth it out
+	return lerp(vec3(v1, v2, 0),
+		vec3(v3, v4, 0),
+		float(pos.y - floorY));
+}
 void TextureApplication::PerlinTest()
 {
 	float* perlinData = new float[m_rows * m_cols];
@@ -151,7 +167,7 @@ void TextureApplication::PerlinTest()
 			for (int o = 0; o < octaves; ++o)
 			{
 				float freq = powf(2, float(o));
-				//float perlinSample = DonrayNoise(vec2(float(x), float(y)) * scale * freq , 0)  * 0.5f + 0.5f;
+				//float perlinSample = DonrayNoise(vec2(float(x), float(y)) * scale * freq)  * 0.5f + 0.5f;
 				//float perlinSample = perlin(vec2(float(x), float(y)) * scale * freq)  * 0.5f + 0.5f;
 				float perlinSample = InterpolatedNoise(vec2(float(x), float(y)) * scale * freq, 1).x
 					* 0.5f + 0.5f;
@@ -175,26 +191,10 @@ double TextureApplication::DonrayNoise(vec2 pos)
 	int i = rand() % 10;
 	auto a = primes[i][rand() % 3], b = primes[i][rand() % 3], c = primes[i][rand() % 3];
 	// From Canvas Slides
-	int n = (pos.x + pos.y);
+	int n = int((pos.x) + int(pos.y));
 	n = n << 13 ^ n;
 	auto nn = n * (n * n * a + b) + c & 0x7fffffff;
 	return 1.0 - double(nn) / 1073741824.0;
-}
-
-vec2 TextureApplication::InterpolatedNoise(vec2 pos, int value)
-{
-	//The value of x and y rounded downwards
-	//This is a bit of a wing
-	double floorX = floor(pos.x), floorY = floor(pos.y);
-	//Get the surrounding pixels to calculate the transition.
-	float v1 = DonrayNoise(vec2(floorX, floorY)),
-		v2 = DonrayNoise(vec2(floorX + value, floorY)),
-		v3 = DonrayNoise(vec2(floorX, floorY + value)),
-		v4 = DonrayNoise(vec2(floorX + value, floorY + value));
-	//Smooth it out
-	return lerp(vec3(v1, v2, pos.x - floorX),
-		vec3(v3, v4, pos.x - floorX),
-		float(pos.y - floorY));
 }
 
 void TextureApplication::OnGUI() const

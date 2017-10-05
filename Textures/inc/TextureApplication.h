@@ -29,7 +29,7 @@ public:
 	unsigned m_perlinTexture;
 	void PerlinTest();
 	static double DonrayNoise(glm::vec2);
-	static glm::vec2 InterpolatedNoise(glm::vec2, int);
+	static auto InterpolatedNoise(glm::vec2, int);
 private:
 	void OnGUI() const;
 protected:
