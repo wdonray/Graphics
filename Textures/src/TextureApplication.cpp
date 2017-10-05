@@ -55,7 +55,7 @@ Mesh* TextureApplication::generateGrid(unsigned int rows, unsigned int cols)
 				vec4(sin(r), cos(c), 0, 1),
 				vec4(0, 1, 0, 0),
 				vec2(float(c) / float(cols - 1),
-				     float(r) / float(rows - 1))
+					 float(r) / float(rows - 1))
 			};
 			aoVertices[r * cols + c] = verts;
 		}
@@ -108,7 +108,7 @@ bool TextureApplication::startup()
 	shader->load("perlin.frag", GL_FRAGMENT_SHADER, true);
 	shader->attach();
 
-	m_rows = 64 , m_cols = 64;
+	m_rows = 64, m_cols = 64;
 	plane = generateGrid(m_rows, m_cols);
 	plane->Create_Buffers();
 
@@ -153,7 +153,8 @@ void TextureApplication::PerlinTest()
 				float freq = powf(2, float(o));
 				//float perlinSample = DonrayNoise(vec2(float(x), float(y)) * scale * freq , 0)  * 0.5f + 0.5f;
 				//float perlinSample = perlin(vec2(float(x), float(y)) * scale * freq)  * 0.5f + 0.5f;
-				float perlinSample = InterpolatedNoise(vec2(float(x), float(y)) * scale * freq, 1).x * 0.5f + 0.5f;
+				float perlinSample = InterpolatedNoise(vec2(float(x), float(y)) * scale * freq, 1).x
+					* 0.5f + 0.5f;
 				perlinData[y * m_rows + x] += perlinSample * amplitude;
 				amplitude *= persistence;
 			}
@@ -174,10 +175,10 @@ double TextureApplication::DonrayNoise(vec2 pos)
 	int i = rand() % 10;
 	auto a = primes[i][rand() % 3], b = primes[i][rand() % 3], c = primes[i][rand() % 3];
 	// From Canvas Slides
-	int n = (pos.x + pos.y) * 57;
-	n = (n << 13) ^ n;
-	auto nn = (n * (n * n * a + b) + c) & 0x7fffffff;
-	return 1.0 - (double(nn) / 1073741824.0);
+	int n = (pos.x + pos.y);
+	n = n << 13 ^ n;
+	auto nn = n * (n * n * a + b) + c & 0x7fffffff;
+	return 1.0 - double(nn) / 1073741824.0;
 }
 
 vec2 TextureApplication::InterpolatedNoise(vec2 pos, int value)
@@ -192,8 +193,8 @@ vec2 TextureApplication::InterpolatedNoise(vec2 pos, int value)
 		v4 = DonrayNoise(vec2(floorX + value, floorY + value));
 	//Smooth it out
 	return lerp(vec3(v1, v2, pos.x - floorX),
-	            vec3(v3, v4, pos.x - floorX),
-	            float(pos.y - floorY));
+		vec3(v3, v4, pos.x - floorX),
+		float(pos.y - floorY));
 }
 
 void TextureApplication::OnGUI() const
