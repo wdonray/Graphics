@@ -153,6 +153,12 @@ auto TextureApplication::InterpolatedNoise(vec2 pos, int value)
 		vec3(v3, v4, 0),
 		float(pos.y - floorY));
 }
+unsigned int TextureApplication::getRandom(unsigned seed0, unsigned seed1)
+{
+	seed1 = 36969 * (seed1 & 65535) + (seed1 >> 16);
+	seed0 = 18000 * (seed0 & 65535) + (seed0 >> 16);
+	return (seed1 << 16) + seed0;
+}
 void TextureApplication::PerlinTest()
 {
 	float* perlinData = new float[m_rows * m_cols];
@@ -190,6 +196,10 @@ double TextureApplication::DonrayNoise(vec2 pos)
 	//Get random prime number.
 	int i = rand() % 10;
 	auto a = primes[i][rand() % 3], b = primes[i][rand() % 3], c = primes[i][rand() % 3];
+
+	//unsigned int i = getRandom(0, 12);
+	//auto a = primes[i][i], b = primes[i][i], c = primes[i][i];
+
 	// From Canvas Slides
 	int n = int((pos.x) + int(pos.y));
 	n = n << 13 ^ n;

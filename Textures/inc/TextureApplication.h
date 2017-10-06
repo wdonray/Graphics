@@ -30,6 +30,7 @@ public:
 	void PerlinTest();
 	static double DonrayNoise(glm::vec2);
 	static auto InterpolatedNoise(glm::vec2, int);
+	static unsigned int getRandom(unsigned, unsigned);
 private:
 	void OnGUI() const;
 protected:
